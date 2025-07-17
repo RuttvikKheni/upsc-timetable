@@ -101,7 +101,7 @@ export default function LoginPage() {
             <label
               htmlFor="password"
               className={`absolute left-0 transition-all text-gray-400 ${
-                password || document.activeElement?.id === "password"
+                password || (typeof window !== "undefined" && window?.document?.activeElement?.id === "password")
                   ? "-top-5 text-sm text-purple-500 font-semibold"
                   : "top-3 text-base"
               } pointer-events-none`}
