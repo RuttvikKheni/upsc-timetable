@@ -103,7 +103,7 @@ export function Review({ data, onRegenerate }: any) {
       const filename = `upsc-timetable-${new Date().toISOString().split("T")[0]
         }.pdf`;
 
-     const result:any = await downloadFile("/api/download-pdf", filename, {
+      const result: any = await downloadFile("/api/download-pdf", filename, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -112,7 +112,7 @@ export function Review({ data, onRegenerate }: any) {
           timetableData: data.generatedTimetable,
         }),
       });
-      if(result){
+      if (result) {
         const res = await fetch("/api/timetable/downloadhandle", {
           method: "PUT",
           headers: {
@@ -125,10 +125,10 @@ export function Review({ data, onRegenerate }: any) {
         if (!res.ok) {
           throw new Error("Failed to download timetable");
         }
-       if(res.ok){
-        localStorage.removeItem("timetableId");
-       }
-       
+        if (res.ok) {
+          localStorage.removeItem("timetableId");
+        }
+
       }
     } catch (error) {
       // Error handling is done in the hook
@@ -314,8 +314,8 @@ export function Review({ data, onRegenerate }: any) {
                                     <div
                                       key={index}
                                       className={`pt-2 first:pt-0 ${index === 0
-                                          ? "first:!border-t-0"
-                                          : "!border-t"
+                                        ? "first:!border-t-0"
+                                        : "!border-t"
                                         }`}
                                     >
                                       <div

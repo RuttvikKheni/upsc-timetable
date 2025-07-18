@@ -60,10 +60,10 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-100">
       <div className="w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl flex flex-col items-center">
         <div className="mb-8 w-full flex flex-col items-center">
-          <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
+          <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-primary mb-2">
             ProxyGyan
           </span>
-          <span className="text-gray-400 text-sm tracking-wide">
+          <span className="text-sm tracking-wide">
             Welcome back! Please login to your account.
           </span>
           {error && (
@@ -88,7 +88,7 @@ export default function LoginPage() {
               onFocus={() => setEmailFocused(true)}
               onBlur={() => setEmailFocused(false)}
               required
-              className="peer h-12 w-full border-b-2 border-gray-200 text-gray-900 placeholder-transparent focus:outline-none focus:border-blue-500 bg-transparent transition"
+              className="peer h-12 w-full border-b-2 border-gray-200 text-gray-900 placeholder-transparent focus:outline-none focus:border-primary bg-transparent transition"
               placeholder="Email address"
               autoComplete="email"
             />
@@ -113,7 +113,7 @@ export default function LoginPage() {
                 setPassword(e.target.value);
                 setError("");
               }}
-              className="peer h-12 w-full border-b-2 border-gray-200 text-gray-900 placeholder-transparent focus:outline-none focus:border-purple-500 bg-transparent transition pr-10"
+              className="peer h-12 w-full border-b-2 border-gray-200 text-gray-900 placeholder-transparent focus:outline-none focus:border-primary bg-transparent transition pr-10"
               placeholder="Password"
               autoComplete="current-password"
             />
@@ -121,7 +121,7 @@ export default function LoginPage() {
               htmlFor="password"
               className={`absolute left-0 transition-all text-gray-400 ${
                 password || (typeof window !== "undefined" && window?.document?.activeElement?.id === "password")
-                  ? "-top-5 text-sm text-purple-500 font-semibold"
+                  ? "-top-5 text-sm text-primary font-semibold"
                   : "top-3 text-base"
               } pointer-events-none`}
             >
@@ -130,7 +130,7 @@ export default function LoginPage() {
             <span
               aria-label={showPassword ? "Hide password" : "Show password"}
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-600 focus:outline-none"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary focus:outline-none"
               tabIndex={-1}
             >
               {showPassword ? (
@@ -171,14 +171,43 @@ export default function LoginPage() {
               )}
             </span>
           </div>
-          <input
+          <button
             type="submit"
-            className={`mt-4 w  -full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold text-lg shadow-lg hover:from-blue-700 hover:to-purple-700 transition ${
+            className={`mt-4 w-full py-3 rounded-xl bg-primary text-white font-semibold text-lg shadow-lg hover:from-blue-700 hover:to-purple-700 transition ${
               isLoading ? "opacity-50 cursor-not-allowed" : ""
             }`}
             value="Login"
             disabled={isLoading}
-          />
+          >
+            {isLoading ? (
+              <div className="h-6 w-6 relative m-[2px]">
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            ) : (
+              "Login"
+            )}
+          </button>         
         </form>
       </div>
     </div>

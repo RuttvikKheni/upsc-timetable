@@ -43,16 +43,12 @@ export default function AdminDashboard() {
   const [timetableData, setTimetableData] = useState<TimetableData[]>([]);
   const [fetchingLoading, setFetchingLoading] = useState(true);
   const router = useRouter();
-  const handleLogout = () => {
+   const handleLogout = () => {
     if (typeof document !== "undefined") {
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c
-          .replace(/^ +/, "")
-          .replace(/=.*/, "=;expires=" + new Date(0).toUTCString() + ";path=/");
-      });
+      document.cookie = `token=;expires=${new Date(0).toUTCString()};path=/;domain=${process.env.FRONTEND_URL}`;
     }
-    router.replace("/login");
     localStorage.removeItem("userId");
+    router.replace("/login");
   };
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -168,12 +164,12 @@ export default function AdminDashboard() {
             } lg:translate-x-0 lg:static lg:shadow-none`}
           >
             <div className="flex items-center justify-between px-6 h-16 border-b border-gray-100 dark:border-gray-900">
-              <span className="text-xl font-bold text-gradient bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:bg-gradient-to-r dark:from-blue-400 dark:to-purple-400 dark:text-white">
+              <span className="text-xl font-bold text-gradient bg-primary bg-clip-text text-transparent dark:bg-gradient-to-r dark:from-blue-400 dark:to-purple-400 dark:text-white">
                 <Link href="/dashboard">ProxyGyan</Link>
               </span>
               <div className="flex items-center gap-2">
                 <button
-                  className="text-gray-700 hover:text-blue-600 focus:outline-none"
+                  className="text-gray-700 hover:text-primary focus:outline-none"
                   title={
                     darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
                   }
@@ -198,10 +194,10 @@ export default function AdminDashboard() {
                 <Link
                   key={link.name}
                   href={link.name === "Logout" ? "/logout" : "/dashboard"}
-                  className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-100 font-medium hover:bg-blue-100/70 dark:hover:bg-gray-800 transition group"
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-100 font-medium hover:bg-primary/15 dark:hover:bg-gray-800 transition group"
                 >
-                  <link.icon className="h-5 w-5 text-blue-500 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300" />
-                  <span className="group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                  <link.icon className="h-5 w-5 text-primary dark:text-blue-400 group-hover:text-primary dark:group-hover:text-blue-300" />
+                  <span className="group-hover:text-primary dark:group-hover:text-blue-300">
                     {link.name}
                   </span>
                 </Link>
@@ -317,7 +313,7 @@ export default function AdminDashboard() {
               </h1>
               <div className="relative">
                 <FaUserCircle
-                  className="h-8 w-8 text-gray-400 cursor-pointer"
+                  className="h-8 w-8 text-primary/80 cursor-pointer"
                   onClick={() => setUserMenuOpen((prev) => !prev)}
                 />
                 {userMenuOpen && (
@@ -356,7 +352,7 @@ export default function AdminDashboard() {
                 Time Table Report
               </h1>
               <div className="bg-white overflow-x-auto dark:bg-gray-900 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-800">
-                <table className="w-full max-w-full">
+                <table className="w-full max-w-full min-h-[500px]">
                   <thead className="bg-gray-100 dark:bg-gray-800">
                     <tr>
                       {[
@@ -365,7 +361,7 @@ export default function AdminDashboard() {
                         "Email",
                         "Phone",
                         "Target Year",
-                        "Amount",
+                        "Amount (₹)",
                         "Razorpay Payment ID",
                         "Payment Status",
                         "Download Status",
@@ -375,7 +371,7 @@ export default function AdminDashboard() {
                         <th
                           key={index}
                           className={[
-                            "px-4 py-2 text-left break-words font-semibold border-b border-gray-200 dark:border-gray-700 dark:text-white whitespace-nowrap",
+                            "px-4 py-2 text-left break-words font-medium text-foreground border-b border-gray-200 dark:border-gray-700 dark:text-white whitespace-nowrap",
                             [
                               "w-12", // S.No
                               "w-40", // Name
@@ -435,41 +431,44 @@ export default function AdminDashboard() {
                               <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 whitespace-nowrap dark:text-[#64E9F8]">
                                 {index + 1}
                               </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-medium whitespace-nowrap dark:text-[#C9F7F5]">
+                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#C9F7F5]">
                                 {item.fullName}
                               </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-medium whitespace-nowrap dark:text-[#34D399]">
+                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#34D399]">
                                 {item.email}
                               </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-medium whitespace-nowrap dark:text-[#FFD700]">
+                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FFD700]">
                                 {item.contactNumber}
                               </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-medium whitespace-nowrap dark:text-[#FF99CC]">
+                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FF99CC]">
                                 {item.targetYear}
                               </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-medium whitespace-nowrap dark:text-[#FFC107]">
+                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FFC107]">
                                 299
                               </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-medium whitespace-nowrap dark:text-[#A7FFEB]">
+                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#A7FFEB]">
                                 {item.razorpayOrderId}
                               </td>
-                              <td className="px-4 py-2 flex items-center justify-center border-t border-gray-200 dark:border-gray-700 break-words font-medium whitespace-nowrap">
+                              <td className="px-4 py-2 flex items-center justify-center border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap">
                                 <span
                                   className={`px-2 py-1 rounded-full ${
                                     item.razorpayPaymentStatus === "success"
-                                      ? "bg-green-200 text-green-500"
-                                      : "bg-red-200 text-red-500"
+                                      ? "bg-green-100 text-green-500"
+                                      : "bg-red-100 text-red-500"
                                   }`}
                                 >
-                                  {item.razorpayPaymentStatus}
+                                  {" "}
+                                  {item.razorpayPaymentStatus === "failed"
+                                    ? "Failed"
+                                    : "Success"}
                                 </span>
                               </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-medium whitespace-nowrap">
+                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap">
                                 <span
                                   className={`px-2 py-1 rounded-full ${
                                     item.downloadStatus === "downloaded failed"
-                                      ? "bg-red-200 text-red-500"
-                                      : "bg-green-200 text-green-500"
+                                      ? "bg-red-100 text-red-500"
+                                      : "bg-green-100 text-green-500"
                                   }`}
                                 >
                                   {" "}
@@ -478,7 +477,7 @@ export default function AdminDashboard() {
                                     : "Success"}
                                 </span>
                               </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-medium whitespace-nowrap dark:text-[#99E1D9]">
+                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#99E1D9]">
                                 {new Intl.DateTimeFormat("en-IN", {
                                   year: "numeric",
                                   month: "long",
@@ -488,7 +487,7 @@ export default function AdminDashboard() {
                                   second: "2-digit",
                                 }).format(createdAt)}
                               </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-medium whitespace-nowrap dark:text-[#6EE7BC]">
+                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#6EE7BC]">
                                 <button className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline">
                                   <Download className="h-4 w-4" />
                                   Download
