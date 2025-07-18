@@ -164,12 +164,12 @@ export default function AdminDashboard() {
             } lg:translate-x-0 lg:static lg:shadow-none`}
           >
             <div className="flex items-center justify-between px-6 h-16 border-b border-gray-100 dark:border-gray-900">
-              <span className="text-xl font-bold text-gradient bg-primary bg-clip-text text-transparent dark:bg-gradient-to-r dark:from-blue-400 dark:to-purple-400 dark:text-white">
+              <span className="text-xl font-bold text-gradient bg-primary bg-clip-text text-transparent dark:text-gray-100">
                 <Link href="/dashboard">ProxyGyan</Link>
               </span>
               <div className="flex items-center gap-2">
                 <button
-                  className="text-gray-700 hover:text-primary focus:outline-none"
+                  className="text-gray-700 hover:text-primary dark:hover:text-gray-100 focus:outline-none"
                   title={
                     darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
                   }
@@ -313,13 +313,13 @@ export default function AdminDashboard() {
               </h1>
               <div className="relative">
                 <FaUserCircle
-                  className="h-8 w-8 text-primary/80 cursor-pointer"
+                  className="h-8 w-8 text-primary/80 dark:text-gray-100 cursor-pointer"
                   onClick={() => setUserMenuOpen((prev) => !prev)}
                 />
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded shadow-lg z-50">
                     <ul className="border-b border-gray-200 dark:border-gray-700">
-                      <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-100">
                         <button
                           className="block w-full text-left"
                           onClick={() => {
@@ -332,7 +332,7 @@ export default function AdminDashboard() {
                       </li>
                     </ul>
                     <button
-                      className="block w-full text-left px-4 py-2 hover:bg-red-100 dark:hover:bg-red-700 text-red-500"
+                      className="block w-full text-left px-4 py-2 hover:bg-red-100 dark:hover:bg-red-700 dark:hover:text-gray-100 text-red-500"
                       onClick={() => {
                         setUserMenuOpen(false);
                         setLogoutOpen(true);
@@ -453,8 +453,8 @@ export default function AdminDashboard() {
                                 <span
                                   className={`px-2 py-1 rounded-full ${
                                     item.razorpayPaymentStatus === "success"
-                                      ? "bg-green-100 text-green-500"
-                                      : "bg-red-100 text-red-500"
+                                      ? "bg-green-100 dark:bg-green-200 text-green-500"
+                                      : "bg-red-100 dark:bg-red-200 text-red-500"
                                   }`}
                                 >
                                   {" "}
@@ -467,8 +467,8 @@ export default function AdminDashboard() {
                                 <span
                                   className={`px-2 py-1 rounded-full ${
                                     item.downloadStatus === "downloaded failed"
-                                      ? "bg-red-100 text-red-500"
-                                      : "bg-green-100 text-green-500"
+                                      ? "bg-red-100 dark:bg-red-200 text-red-500"
+                                      : "bg-green-100 dark:bg-green-200 text-green-500"
                                   }`}
                                 >
                                   {" "}
@@ -488,7 +488,7 @@ export default function AdminDashboard() {
                                 }).format(createdAt)}
                               </td>
                               <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#6EE7BC]">
-                                <button className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline">
+                                <button className="flex items-center gap-1 text-primary dark:text-blue-400 hover:underline">
                                   <Download className="h-4 w-4" />
                                   Download
                                 </button>
