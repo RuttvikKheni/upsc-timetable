@@ -180,7 +180,7 @@ export default function LoginPage() {
             disabled={isLoading}
           >
             {isLoading ? (
-              <div className="h-6 w-6 relative m-[2px]">
+              <div className="h-6 w-6 relative m-[2px] mx-auto">
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                   <svg
                     className="animate-spin h-5 w-5 text-white"
