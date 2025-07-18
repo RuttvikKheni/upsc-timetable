@@ -37,7 +37,7 @@ export default function LoginPage() {
           theme: "dark",
         });
         localStorage.setItem("userId", JSON.stringify(data.user._id.toString()));
-        router.push("/dashboard");
+        router.replace("/dashboard");
       }
       setIsLoading(false);
       setError(data.error);

@@ -51,7 +51,7 @@ export default function AdminDashboard() {
           .replace(/=.*/, "=;expires=" + new Date(0).toUTCString() + ";path=/");
       });
     }
-    router.push("/login");
+    router.replace("/login");
     localStorage.removeItem("userId");
   };
 
