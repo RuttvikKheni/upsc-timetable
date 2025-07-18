@@ -12,9 +12,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        // Save to DB
-        const saved = await TimeTable.create(data);
-        return NextResponse.json({ success: true, timetable: saved });
+      const data2 = await TimeTable.create(data);
+      return NextResponse.json({ success: true, timetable: data2._id });
     } catch (error) {
         console.error("Error saving timetable:", error);
         return NextResponse.json(
@@ -23,3 +22,5 @@ export async function POST(request: Request) {
         );
     }
 }
+
+

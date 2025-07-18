@@ -31,6 +31,9 @@ const TimeTableSchema = new mongoose.Schema({
   razorpayOrderId: { type: String, default: "" },
   razorpayPaymentId: { type: String, default: "" },
   razorpayPaymentStatus: { type: String},
+  amount: { type: String },
+  status:{type:String,default:"null"},
+  downloadStatus:{type:String,default:"downloaded failed"}
 }, {
     timestamps: true
 });

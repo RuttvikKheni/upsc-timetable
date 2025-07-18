@@ -5,6 +5,7 @@ import { Input } from "../ui/input";
 import { Checkbox } from "../ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { loadRazorpay } from "../../lib/loadRazorpay";
+import React from "react";
 
 interface DailyScheduleProps {
   data: any;
@@ -78,9 +79,9 @@ export function DailySchedule({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: data.email, name: data.fullName }),
       });
-
       if (!orderRes.ok) {
-        throw new Error("Failed to create order");
+        // throw new Error("Failed to create order");
+        return alert("Failed to create order");
       }
 
       const orderData = await orderRes.json();
@@ -91,7 +92,7 @@ export function DailySchedule({
         currency: "INR",
         name: "Proxy Gyan Personalized UPSC Timetable",
         order_id: orderData.id,
-        handler: async function () {
+        handler: async function (response: any) {
           try {
             // Ensure working professionals and part-time aspirants have subjectsPerDay set to "one"
             const finalFormData = {
@@ -116,22 +117,26 @@ export function DailySchedule({
             }
 
             const result = await res.json();
-            console.log("result =====================",orderData);
-            // Send data to /api/timetable/generate-db-timetable (fire-and-forget)
-            fetch("/api/timetable/generate-db-timetable", {
+
+            // Call API for payment success
+            const res2 = await fetch("/api/timetable/generate-db-timetable", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ...data,
                 ...finalFormData,
-                razorpayOrderId: orderData.id,
-                razorpayPaymentStatus: "pending",
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                status: "paid",
+                razorpayPaymentStatus: "success",
+                paymentSignature: response.razorpay_signature,
               }),
-            }).catch((err) => {
-              // Optionally log error, but do not block user
-              console.error("Failed to send data to generate-db-timetable:", err);
-            });
-
+            })
+            if (!res2.ok) {
+              throw new Error("Failed to save timetable");
+            }
+            const data2 = await res2.json();
+            localStorage.setItem("timetableId", data2.timetable);
             if (!result.timetable) {
               throw new Error("Timetable not returned");
             }
@@ -155,8 +160,39 @@ export function DailySchedule({
         },
       };
 
+      let paymentFailedCalled = false;
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
+
+      rzp.on("payment.failed", function (response: any) {
+        if (paymentFailedCalled) return;
+        paymentFailedCalled = true;
+        console.error("Payment Failed:", response.error);
+        fetch("/api/timetable/generate-db-timetable", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...data,
+            ...formData,
+            razorpayOrderId: response.error?.metadata?.order_id,
+            razorpayPaymentId: response.error?.metadata?.payment_id,
+            status: "failed",
+            razorpayPaymentStatus: "failed",
+            paymentError: response.error,
+          }),
+        }).catch((err) => {
+          console.error(
+            "Failed to send data to generate-db-timetable (failed):",
+            err
+          );
+        });
+        // You can access failure details like:
+        // response.error.code
+        // response.error.description
+        // response.error.reason
+        // response.error.metadata.order_id
+        // response.error.metadata.payment_id
+      });
     } catch (error) {
       console.error("Error in payment:", error);
       alert("Failed to initiate payment. Please try again.");
@@ -182,7 +218,9 @@ export function DailySchedule({
             }
             className="flex flex-col space-y-1 ml-5"
           >
-            {[...data.aspirantType === "full-time" ? ["8", "10"] : ["4", "6"]].map((hour) => (
+            {[
+              ...(data.aspirantType === "full-time" ? ["8", "10"] : ["4", "6"]),
+            ].map((hour) => (
               <div key={hour} className="flex items-center space-x-2">
                 <RadioGroupItem value={hour} id={`hour-${hour}`} />
                 <Label htmlFor={`hour-${hour}`}>{hour} hours</Label>
@@ -218,7 +256,9 @@ export function DailySchedule({
             {" "}
             <li>
               {" "}
-              <Label className="text-[15px]" htmlFor="sleepTime">What time do you go to bed?</Label>
+              <Label className="text-[15px]" htmlFor="sleepTime">
+                What time do you go to bed?
+              </Label>
             </li>
           </ul>
           <Input
@@ -260,7 +300,9 @@ export function DailySchedule({
               {" "}
               <li>
                 {" "}
-                <Label className="text-[15px]">How many subjects do you want to learn per day?</Label>
+                <Label className="text-[15px]">
+                  How many subjects do you want to learn per day?
+                </Label>
               </li>
             </ul>
             <RadioGroup

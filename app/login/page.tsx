@@ -2,7 +2,8 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
+import { toast} from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
@@ -25,19 +26,37 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (data.user) {
-        console.log(data);
+        toast.success("Login successful" , {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
         localStorage.setItem("userId", JSON.stringify(data.user._id.toString()));
         router.push("/dashboard");
       }
       setIsLoading(false);
       setError(data.error);
     } catch (error) {
-      console.error("Error logging in:", error);
-      setError("Failed to log in. Please try again.");
+      toast.error("Failed to log in. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
       setIsLoading(false);
     }
   };
   return (
+    <>
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-100">
       <div className="w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl flex flex-col items-center">
         <div className="mb-8 w-full flex flex-col items-center">
@@ -163,5 +182,5 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
-  );
+ </> );
 }

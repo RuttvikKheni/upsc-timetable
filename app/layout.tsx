@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "../components/ui/toast";
+import { ToastContainer } from "react-toastify";
 
 const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
   title: "UPSC Timetable Generator",
   description: "Generate your personalized UPSC study timetable",
@@ -31,6 +31,8 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
+      <ToastContainer position="top-left" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover theme={"dark"} />
+
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

@@ -104,7 +104,7 @@ export function Review({ data, onRegenerate }: any) {
         new Date().toISOString().split("T")[0]
       }.pdf`;
 
-      await downloadFile("/api/download-pdf", filename, {
+     const result:any = await downloadFile("/api/download-pdf", filename, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,6 +113,24 @@ export function Review({ data, onRegenerate }: any) {
           timetableData: data.generatedTimetable,
         }),
       });
+      if(result){
+        const res = await fetch("/api/timetable/downloadhandle", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            timeTableId: localStorage.getItem("timetableId"),
+          }),
+        });
+        if (!res.ok) {
+          throw new Error("Failed to download timetable");
+        }
+       if(res.ok){
+        localStorage.removeItem("timetableId");
+       }
+       
+      }
     } catch (error) {
       // Error handling is done in the hook
       console.error("Download failed:", error);

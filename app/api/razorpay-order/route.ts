@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
     const order = await razorpay.orders.create(options);
     console.log("Razorpay order created:", order); // ✅ helpful log
-
+    
     return NextResponse.json(order);
   } catch (error) {
     console.error("Error creating Razorpay order:", error);
