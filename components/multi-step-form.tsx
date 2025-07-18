@@ -7,7 +7,7 @@ import { BasicInfo } from "./steps/basic-info";
 import { PastPreparation } from "./steps/past-preparation";
 import { CurrentStatus } from "./steps/current-status";
 import { DailySchedule } from "./steps/daily-schedule";
-import { Review } from "./steps/review"; 
+import { Review } from "./steps/review";
 
 
 export function MultiStepForm() {
@@ -16,11 +16,11 @@ export function MultiStepForm() {
 
   const steps = [
     {
-      title: "Basic Information",
+      title: "Basic Info",
       component: BasicInfo,
     },
     {
-      title: "Past Preparation",
+      title: "Past Prep",
       component: PastPreparation,
     },
     {
@@ -28,10 +28,10 @@ export function MultiStepForm() {
       component: CurrentStatus,
     },
     {
-      title: "Daily Schedule",
+      title: "Schedule",
       component: DailySchedule,
     },
-    { title: "Your Personalized Timetable", component: Review },
+    { title: "Review", component: Review },
   ];
 
   const stepTitles = steps.map(step => step.title);
@@ -44,8 +44,8 @@ export function MultiStepForm() {
     console.log("handleRegenerate called with:", newTimetableData);
     // Update the form data with the new timetable data
     // The API returns { timetable: [...] } but we need { generatedTimetable: [...] }
-    const updatedFormData = { 
-      ...formData, 
+    const updatedFormData = {
+      ...formData,
       generatedTimetable: newTimetableData.timetable || newTimetableData.generatedTimetable
     };
     console.log("Updated form data:", updatedFormData);
@@ -66,35 +66,36 @@ export function MultiStepForm() {
 
   const CurrentStepComponent = steps[currentStep].component;
   return (
-    <div className="space-y-8 max-w-full sm:max-w-2xl mx-auto px-2 sm:px-0">
-      <StepProgress steps={stepTitles} currentStep={currentStep} />
-      
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          {currentStep === steps.length - 1 ? (
-            <Review
-              data={{ ...formData, formData }}
-              updateData={updateFormData}
-              nextStep={nextStep}
-              prevStep={prevStep}
-              onRegenerate={handleRegenerate}
-            />
-          ) : (
-            <CurrentStepComponent
-              data={formData}
-              updateData={updateFormData}
-              nextStep={nextStep}
-              prevStep={prevStep}
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
+    <div className="mt-[70px] mb-[90px] w-full">
+      <div className="max-w-full sm:max-w-4xl container mx-auto px-2 sm:px-4 pt-8">
+        <StepProgress steps={stepTitles} currentStep={currentStep} />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {currentStep === steps.length - 1 ? (
+              <Review
+                data={{ ...formData, formData }}
+                updateData={updateFormData}
+                nextStep={nextStep}
+                prevStep={prevStep}
+                onRegenerate={handleRegenerate}
+              />
+            ) : (
+              <CurrentStepComponent
+                data={formData}
+                updateData={updateFormData}
+                nextStep={nextStep}
+                prevStep={prevStep}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 } 

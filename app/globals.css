@@ -9,11 +9,17 @@
 
 body {
   color: #666666;
-  background: #FFFBEF;
+  /* background: #FFFBEF; */
+  background-color: #f9fafb;
   font-family: "Poppins", sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: #191919;
   font-family: "Poppins", sans-serif;
 }
@@ -69,10 +75,11 @@ h1, h2, h3, h4, h5, h6 {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
-} 
+}
 
 ul.arrow-list {
   list-style: none;
@@ -80,7 +87,8 @@ ul.arrow-list {
 }
 
 ul.arrow-list li::before {
-  content: "➤"; /* You can change this to →, ⇒, ➝, ➢ etc. */
+  content: "➤";
+  /* You can change this to →, ⇒, ➝, ➢ etc. */
   color: #64748B;
   font-size: 14px;
   margin-right: 0.5em;
@@ -89,4 +97,83 @@ ul.arrow-list li::before {
 ul.arrow-list li {
   font-weight: 500 !important;
   font-size: 1rem;
+}
+
+.datePicker .react-datepicker__day--selected {
+  background-color: #573089 !important;
+  color: white !important;
+}
+
+.datePicker .react-datepicker__day--keyboard-selected {
+  background-color: #573089 !important;
+  color: white !important;
+}
+
+.datePicker .react-datepicker__day {
+  color: #64748B;
+}
+
+.datePicker .react-datepicker-wrapper {
+  width: 100%;
+}
+
+.datePicker .react-datepicker-popper {
+  transform: translate(19px, 46px) !important;
+}
+
+.rc-time-picker-panel-select ul li {
+  font-weight: 600;
+}
+
+.rc-time-picker-panel-select ul li:hover {
+  background-color: #57308920 !important;
+  color: black;
+  border-radius: 4px;
+}
+
+li.rc-time-picker-panel-select-option-selected {
+  background-color: #573089 !important;
+  border-radius: 4px;
+  color: white;
+}
+
+.rc-time-picker-panel-input {
+  color: black !important;
+}
+
+.rc-time-picker-panel {
+  top: 451px !important;
+}
+
+.rc-time-picker-panel-input-wrap {
+  display: none;
+}
+
+.rc-time-picker-panel-select {
+  scrollbar-width: none;
+}
+
+.rc-time-picker-panel-inner {
+  padding: 6px;
+}
+
+.rc-time-picker-panel-narrow {
+  max-width: 150px !important;
+}
+
+.rc-time-picker-input {
+  border: 1px solid #e2e8f0 !important;
+  height: 36px !important;
+  width: 100% !important;
+  font-size: 13px !important;
+}
+
+.rc-time-picker {
+  width: 100% !important;
+  border-radius: 4px !important;
+}
+
+.rc-time-picker-clear {
+  pointer-events: none;
+  display: none;
 }

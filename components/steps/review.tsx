@@ -100,9 +100,8 @@ export function Review({ data, onRegenerate }: any) {
     showToast("Starting PDF generation...", "info", 2000);
 
     try {
-      const filename = `upsc-timetable-${
-        new Date().toISOString().split("T")[0]
-      }.pdf`;
+      const filename = `upsc-timetable-${new Date().toISOString().split("T")[0]
+        }.pdf`;
 
      const result:any = await downloadFile("/api/download-pdf", filename, {
         method: "POST",
@@ -226,12 +225,12 @@ export function Review({ data, onRegenerate }: any) {
                 Total Days: {uniqueDates.length}
               </p>
               <div>
-              <p className="text-muted-foreground text-[15px]">
-                Start Date: {uniqueDates[0]}
-              </p>
-              <p className="text-muted-foreground text-[15px]">
-                End Date: {uniqueDates[uniqueDates.length - 1]}
-              </p>
+                <p className="text-muted-foreground text-[15px]">
+                  Start Date: {uniqueDates[0]}
+                </p>
+                <p className="text-muted-foreground text-[15px]">
+                  End Date: {uniqueDates[uniqueDates.length - 1]}
+                </p>
               </div>
             </div>
 
@@ -314,27 +313,24 @@ export function Review({ data, onRegenerate }: any) {
                                   (activity: any, index: number) => (
                                     <div
                                       key={index}
-                                      className={`pt-2 first:pt-0 ${
-                                        index === 0
+                                      className={`pt-2 first:pt-0 ${index === 0
                                           ? "first:!border-t-0"
                                           : "!border-t"
-                                      }`}
+                                        }`}
                                     >
                                       <div
-                                        className={`flex !items-start mb-2 gap-2 relative ${
-                                          activity.SUBJECT ? "" : "justify-end"
-                                        } ${
-                                          (activity.SUBJECT &&
+                                        className={`flex !items-start mb-2 gap-2 relative ${activity.SUBJECT ? "" : "justify-end"
+                                          } ${(activity.SUBJECT &&
                                             !activity["MAIN SUBJECT"]) ||
-                                          activity.SUBTOPICS ===
+                                            activity.SUBTOPICS ===
                                             "Complete subject review and consolidation"
                                             ? "justify-end"
                                             : "justify-between"
-                                        }`}
+                                          }`}
                                       >
                                         {activity.SUBJECT &&
                                           activity.SUBTOPICS !==
-                                            "Complete subject review and consolidation" && (
+                                          "Complete subject review and consolidation" && (
                                             <h4
                                               className={`font-medium text-[15px]`}
                                             >
@@ -343,10 +339,9 @@ export function Review({ data, onRegenerate }: any) {
                                           )}
                                         <span
                                           className={clsx(
-                                            `text-sm font-medium text-end ${
-                                              activity.SUBJECT
-                                                ? "w-[100px]"
-                                                : ""
+                                            `text-sm font-medium text-end ${activity.SUBJECT
+                                              ? "w-[100px]"
+                                              : ""
                                             }`,
                                             getColor(activity["MAIN SUBJECT"])
                                           )}
