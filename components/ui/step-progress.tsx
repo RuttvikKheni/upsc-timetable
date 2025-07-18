@@ -33,7 +33,7 @@ export function StepProgress({
                     "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 relative z-10 bg-white border-2",
                     {
                       "bg-primary text-primary-foreground border-primary": isCompleted,
-                      "bg-primary text-primary-foreground border-primary ring-2 ring-primary/20":
+                      "bg-primary text-primary-foreground border-primary ring ring-primary/20":
                         isCurrent,
                       "bg-white text-muted-foreground border-muted": isUpcoming,
                     }

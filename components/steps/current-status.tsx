@@ -57,8 +57,7 @@ export function CurrentStatus({
   });
 
   const [validationError, setValidationError] = useState("");
-  // const [selectingYear, setSelectingYear] = useState(generateFutureYears(new Date().getFullYear()));
-  const [startDate, setStartDate] = useState<Date | null>(new Date());
+  const [selectingYear, setSelectingYear] = useState(generateFutureYears(new Date().getFullYear()));
 
   const handleCheckboxChange = (field: string, value: string) => {
     const current = (formData as any)[field];
@@ -245,11 +244,26 @@ export function CurrentStatus({
               </ul>
               <div className="relative w-full pl-5 datePicker">
                 <DatePicker
-                  selected={startDate}
-                  onChange={(date: Date | null) => setStartDate(date)}
+                  selected={formData.preparationStartDate}
+                  onChange={(date: Date | null) => {
+                    const selectedDate = new Date(date ?? new Date());
+                    const selectedYear = selectedDate.getFullYear();
+
+                    setFormData({ ...formData, preparationStartDate: date });
+
+                    if (data.aspirantType === "part-time" || data.aspirantType === "working professional") {
+                      const futureDate = new Date(selectedDate);
+                      futureDate.setMonth(futureDate.getMonth() + 10);
+
+                      setSelectingYear(generateFutureYears(futureDate.getMonth() > 4 ? selectedYear + 1 : selectedYear));
+                    } else {
+                      setSelectingYear(generateFutureYears(selectedYear));
+                    }
+                  }}
                   className="border border-input focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded px-2 py-1 text-sm !w-full h-9"
                   dateFormat="dd/MM/yyyy"
                   placeholderText="Choose a date"
+                  minDate={new Date()}
                 />
                 <Calendar className="text-black !w-4 !h-4 absolute top-2.5 right-3 pointer-events-none" />
               </div>
@@ -270,26 +284,26 @@ export function CurrentStatus({
                 }
                 className="flex flex-wrap gap-3 pl-5"
               >
-                {selectingYearOptions.map((year) => (
+                {selectingYear.map((year) => (
                   <RadioGroupItem
-                    key={year.id}
-                    value={year.value}
-                    id={year.id}
+                    key={year}
+                    value={year}
+                    id={year}
                     className="sr-only"
                   />
                 ))}
-                {selectingYearOptions.map((year) => {
-                  const isSelected = formData.targetYear === year.value
+                {selectingYear.map((year) => {
+                  const isSelected = formData.targetYear === year
                   return (
                     <label
-                      key={year.id}
-                      htmlFor={year.id}
+                      key={year}
+                      htmlFor={year}
                       className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap ${isSelected
                         ? "bg-primary/10 text-primary border-primary"
                         : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
                         }`}
                     >
-                      {year.label}
+                      {year}
                     </label>
                   )
                 })}

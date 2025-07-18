@@ -18,13 +18,13 @@ interface DailyScheduleProps {
 }
 
 const weekDays = [
-  { day: "Mon", short: "M" },
-  { day: "Tue", short: "T" },
-  { day: "Wed", short: "W" },
-  { day: "Thu", short: "T" },
-  { day: "Fri", short: "F" },
-  { day: "Sat", short: "S" },
-  { day: "Sun", short: "S" },
+  { value: "Monday", day: "Mon", short: "M" },
+  { value: "Tuesday", day: "Tue", short: "T" },
+  { value: "Wednesday", day: "Wed", short: "W" },
+  { value: "Thursday", day: "Thu", short: "T" },
+  { value: "Friday", day: "Fri", short: "F" },
+  { value: "Saturday", day: "Sat", short: "S" },
+  { value: "Sunday", day: "Sun", short: "S" },
 ];
 
 
@@ -205,9 +205,13 @@ export function DailySchedule({
   };
 
   const dailyHoursOptions = [
-    { id: "8", value: "8", label: "8 Hours" },
-    { id: "10", value: "10", label: "10 Hours" },
-    { id: "custom", value: "custom", label: "Custom" },
+    ...(data.aspirantType === "full-time" ? [
+      { id: "8", value: "8", label: "8 Hours" },
+      { id: "10", value: "10", label: "10 Hours" },
+    ] : [
+      { id: "4", value: "4", label: "4 Hours" },
+      { id: "6", value: "6", label: "6 Hours" },
+    ]),
   ]
 
   return (
@@ -272,13 +276,13 @@ export function DailySchedule({
                 </li>
               </ul>
               <div className="pl-5 relative">
-              <TimePicker
-                showSecond={false}
-                format="h:mm a"
-                placeholder="Select Start Time"
-                onChange={(e) => setFormData({ ...formData, preferredStartTime: moment(e).format('HH:mm') })}
-              />
-              <Clock3 className="absolute right-3 top-2.5 !w-4 !h-4 text-black pointer-events-none"/>
+                <TimePicker
+                  showSecond={false}
+                  format="h:mm a"
+                  placeholder="Select Start Time"
+                  onChange={(e) => setFormData({ ...formData, preferredStartTime: moment(e).format('HH:mm') })}
+                />
+                <Clock3 className="absolute right-3 top-2.5 !w-4 !h-4 text-black pointer-events-none" />
               </div>
 
             </div>
@@ -291,14 +295,14 @@ export function DailySchedule({
                   <Label className="text-[13px] sm:text-[15px]" htmlFor="sleepTime">What time do you go to bed?</Label>
                 </li>
               </ul>
-                <div className="pl-5 relative">
-              <TimePicker
-                showSecond={false}
-                format="h:mm a"
-                placeholder="Select End Time"
-                onChange={(e) => setFormData({ ...formData, sleepTime: moment(e).format('HH:mm') })}
-              />
-              <Clock3 className="absolute right-3 top-2.5 !w-4 !h-4 text-black pointer-events-none"/>
+              <div className="pl-5 relative">
+                <TimePicker
+                  showSecond={false}
+                  format="h:mm a"
+                  placeholder="Select End Time"
+                  onChange={(e) => setFormData({ ...formData, sleepTime: moment(e).format('HH:mm') })}
+                />
+                <Clock3 className="absolute right-3 top-2.5 !w-4 !h-4 text-black pointer-events-none" />
               </div>
             </div>
           </div>
@@ -361,26 +365,26 @@ export function DailySchedule({
                 <div className="flex space-x-2 border rounded-sm p-2 sm:p-3 border-gray-300">
                   <RadioGroupItem value="one" id="one-subject" />
                   <Label htmlFor="one-subject">
-                   <p className="pb-2 text-black text-[13px] sm:text-[15px] font-normal"> One subject per day (focused study)</p>
-                   <p className="font-normal text-xs sm:text-[13px]"> Deel dive into one subject for better retention and understanding</p>
+                    <p className="pb-2 text-black text-[13px] sm:text-[15px] font-normal"> One subject per day (focused study)</p>
+                    <p className="font-normal text-xs sm:text-[13px]"> Deel dive into one subject for better retention and understanding</p>
                   </Label>
                 </div>
-                  <div className="flex space-x-2 border rounded-sm p-2 sm:p-3 border-gray-300">
-                 <RadioGroupItem value="two" id="two-subjects" />
+                <div className="flex space-x-2 border rounded-sm p-2 sm:p-3 border-gray-300">
+                  <RadioGroupItem value="two" id="two-subjects" />
                   <Label htmlFor="two-subjects">
-                   <p className="pb-2 text-black text-[13px] sm:text-[15px] font-normal"> Two subjects per day (parallel study)</p>
-                   <p className="font-normal text-xs sm:text-[13px]"> Switch between subjects to maintain engagement and varity</p>
+                    <p className="pb-2 text-black text-[13px] sm:text-[15px] font-normal"> Two subjects per day (parallel study)</p>
+                    <p className="font-normal text-xs sm:text-[13px]"> Switch between subjects to maintain engagement and varity</p>
                   </Label>
                 </div>
               </RadioGroup>
               <p className="text-sm text-gray-600 !mt-6 flex flex-wrap gap-1.5 ml-5 border rounded-sm p-1.5 sm:p-2 pt-2.5 border-gray-200 bg-gray-100">
-                <Lightbulb className="!w-4 !h-4 mt-0.5"/>
+                <Lightbulb className="!w-4 !h-4 mt-0.5" />
                 <div>
                   <p className="text-black text-[13px] sm:text-[15px] pb-0.5">Personalized Tip :</p>
-                <span className="text-xs sm:text-[13px]">
-                   With more study hours available, you can effectively manage
-                  two subjects per day for faster coverage.
-                </span>
+                  <span className="text-xs sm:text-[13px]">
+                    With more study hours available, you can effectively manage
+                    two subjects per day for faster coverage.
+                  </span>
                 </div>
               </p>
             </div>

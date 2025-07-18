@@ -104,6 +104,11 @@ ul.arrow-list li {
   color: white !important;
 }
 
+.datePicker .react-datepicker__day--disabled {
+  background-color: #e2e8f0 !important;
+  border-radius: 4px;
+}
+
 .datePicker .react-datepicker__day--keyboard-selected {
   background-color: #573089 !important;
   color: white !important;
