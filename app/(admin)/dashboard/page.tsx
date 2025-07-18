@@ -56,7 +56,7 @@ export default function AdminDashboard() {
   };
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(localStorage.getItem("theme") === "dark");
+  const [darkMode, setDarkMode] = useState(typeof window !== "undefined" && localStorage.getItem("theme") === "dark");
 
   const [isLoading, setIsLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
   };
 
   React.useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
+    const storedTheme = typeof window !== "undefined" && localStorage.getItem("theme");
     if (storedTheme === "dark") {
       setDarkMode(true);
       document.documentElement.classList.add("dark");
