@@ -1,19 +1,21 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Bounce, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   FaHome,
-  FaSignOutAlt,
   FaBars,
   FaTimes,
   FaUserCircle,
   FaMoon,
   FaSun,
+  FaChevronRight,
+  FaSearch,
+  FaTimes as FaClear,
 } from "react-icons/fa";
 import Link from "next/link";
 
-const navLinks = [{ name: "Home", icon: FaHome }];
+const navLinks = [{ name: "Home", icon: FaHome, href: "/dashboard" }];
 
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -41,9 +43,10 @@ export default function AdminDashboard() {
   const [confirmPwd, setConfirmPwd] = useState("");
   const [pwdError, setPwdError] = useState("");
   const [timetableData, setTimetableData] = useState<TimetableData[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [fetchingLoading, setFetchingLoading] = useState(true);
   const router = useRouter();
-   const handleLogout = () => {
+  const handleLogout = () => {
     if (typeof document !== "undefined") {
       document.cookie = `token=;expires=${new Date(0).toUTCString()};path=/;domain=${window.location.hostname}`;
     }
@@ -53,6 +56,13 @@ export default function AdminDashboard() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(typeof window !== "undefined" && localStorage.getItem("theme") === "dark");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState("");
+  const [downloadStatusFilter, setDownloadStatusFilter] = useState("");
+  const [activeNavItem, setActiveNavItem] = useState("Home"); // Track active navigation item
+  const isApiCallInProgress = useRef(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -122,18 +132,91 @@ export default function AdminDashboard() {
   };
   useEffect(() => {
     const fetchTimetableData = async () => {
+      // Prevent duplicate API calls
+      if (isApiCallInProgress.current) {
+        console.log("API call already in progress, skipping...");
+        return;
+      }
+
       try {
-        setFetchingLoading(false);
-        const response = await fetch("/api/alltimetabledata");
+        isApiCallInProgress.current = true;
+        setFetchingLoading(true);
+        console.log(`Fetching data: page=${currentPage}, limit=${itemsPerPage}`);
+
+        const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+        const statusParam = paymentStatusFilter ? `&paymentStatus=${encodeURIComponent(paymentStatusFilter)}` : "";
+        const downloadParam = downloadStatusFilter ? `&downloadStatus=${encodeURIComponent(downloadStatusFilter)}` : "";
+        const response = await fetch(`/api/alltimetabledata?page=${currentPage}&limit=${itemsPerPage}${searchParam}${statusParam}${downloadParam}`);
         const data = await response.json();
-        setTimetableData(data);
+
+        if (data.data && data.total !== undefined) {
+          setTimetableData(data.data);
+          setTotalCount(data.total);
+        } else {
+          setTimetableData(data);
+          setTotalCount(data.length);
+        }
         setFetchingLoading(false);
       } catch (error) {
         console.error("Error fetching timetable data:", error);
+        setFetchingLoading(false);
+      } finally {
+        isApiCallInProgress.current = false;
       }
     };
+
     fetchTimetableData();
-  }, []);
+  }, [currentPage, itemsPerPage, searchQuery, paymentStatusFilter, downloadStatusFilter]);
+
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = timetableData;
+
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
+  const goToPrevPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setCurrentPage(1);
+  };
+
+  const handlePaymentStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPaymentStatusFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page when filtering
+  };
+
+  const handleDownloadStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setDownloadStatusFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page when filtering
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setPaymentStatusFilter("");
+    setDownloadStatusFilter("");
+    setCurrentPage(1);
+  };
+
   return (
     <>
       <ToastContainer
@@ -159,9 +242,8 @@ export default function AdminDashboard() {
           )}
           <aside
             className={`fixed top-0  left-0 h-full w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-900 shadow-lg z-40 transform transition-transform duration-200 ease-in-out
-            ${
-              sidebarOpen ? "translate-x-0" : "-translate-x-full"
-            } lg:translate-x-0 lg:static lg:shadow-none`}
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+              } lg:translate-x-0 lg:static lg:shadow-none`}
           >
             <div className="flex items-center justify-between px-6 h-16 border-b border-gray-100 dark:border-gray-900">
               <span className="text-xl font-bold text-gradient bg-primary bg-clip-text text-transparent dark:text-gray-100">
@@ -190,18 +272,31 @@ export default function AdminDashboard() {
               </div>
             </div>
             <nav className="mt-8 flex flex-col gap-2 px-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.name === "Logout" ? "/logout" : "/dashboard"}
-                  className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-100 font-medium hover:bg-primary/15 dark:hover:bg-gray-800 transition group"
-                >
-                  <link.icon className="h-5 w-5 text-primary dark:text-blue-400 group-hover:text-primary dark:group-hover:text-blue-300" />
-                  <span className="group-hover:text-primary dark:group-hover:text-blue-300">
-                    {link.name}
-                  </span>
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive = activeNavItem === link.name;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setActiveNavItem(link.name)}
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition group ${isActive
+                        ? "bg-primary/20 dark:bg-blue-500/20 text-primary dark:text-blue-400 border-l-4 border-primary dark:border-blue-400"
+                        : "text-gray-700 dark:text-gray-100 hover:bg-primary/15 dark:hover:bg-gray-800"
+                      }`}
+                  >
+                    <link.icon className={`h-5 w-5 transition ${isActive
+                        ? "text-primary dark:text-blue-400"
+                        : "text-primary dark:text-blue-400 group-hover:text-primary dark:group-hover:text-blue-300"
+                      }`} />
+                    <span className={`transition ${isActive
+                        ? "text-primary dark:text-blue-400 font-semibold"
+                        : "group-hover:text-primary dark:group-hover:text-blue-300"
+                      }`}>
+                      {link.name}
+                    </span>
+                  </Link>
+                );
+              })}
               <Dialog.Root open={logoutOpen} onOpenChange={setLogoutOpen}>
                 <Dialog.Portal>
                   <Dialog.Overlay className="fixed inset-0 bg-black/40 z-50" />
@@ -346,13 +441,118 @@ export default function AdminDashboard() {
             </div>
           </header>
 
-          <main className="flex-1 p-6 bg-gray-100 dark:bg-gray-800">
+          <main className="flex-1 p-2 bg-gray-100 dark:bg-gray-800">
+            {/* Breadcrumb */}
+            <div className="mb-6">
+              <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  <FaHome className="h-4 w-4" />
+                </Link>
+                <FaChevronRight className="h-3 w-3" />
+                <Link href="/dashboard" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  Dashboard
+                </Link>
+                <FaChevronRight className="h-3 w-3" />
+                <span className="text-gray-900 dark:text-gray-100 font-medium">
+                  Timetable Report
+                </span>
+              </nav>
+            </div>
+
             <div className="grid grid-cols-1 gap-6 mb-8 overflow-x-auto">
-              <h1 className="text-2xl font-bold text-center mb-2 mt-4 dark:text-white">
-                Time Table Report
-              </h1>
-              <div className="bg-white overflow-x-auto dark:bg-gray-900 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-800">
-                <table className="w-full max-w-full min-h-[500px]">
+
+              {/* Search Bar and Filters */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-4 border border-gray-100 dark:border-gray-800">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                  {/* Search Input */}
+                  <div className="relative flex-1 max-w-md">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaSearch className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    </div>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      placeholder="Search by name, email, phone, or target year..."
+                      className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={clearSearch}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      >
+                        <FaClear className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Payment Status Filter */}
+                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      Payment Status:
+                    </label>
+                    <select
+                      value={paymentStatusFilter}
+                      onChange={handlePaymentStatusChange}
+                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors min-w-[120px]"
+                    >
+                      <option value="">All Status</option>
+                      <option value="success">Success</option>
+                      <option value="failed">Failed</option>
+                    </select>
+                  </div>
+
+                  {/* Download Status Filter */}
+                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      Download Status:
+                    </label>
+                    <select
+                      value={downloadStatusFilter}
+                      onChange={handleDownloadStatusChange}
+                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors min-w-[120px]"
+                    >
+                      <option value="">All Status</option>
+                      <option value="downloaded">Success</option>
+                      <option value="downloaded failed">Failed</option>
+                    </select>
+                  </div>
+
+                  {/* Clear All Filters Button */}
+                  {(searchQuery || paymentStatusFilter || downloadStatusFilter) && (
+                    <button
+                      onClick={clearFilters}
+                      className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors whitespace-nowrap"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
+
+                {/* Active Filters Display */}
+                {(searchQuery || paymentStatusFilter || downloadStatusFilter) && (
+                  <div className="mt-3 flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    {searchQuery && (
+                      <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-md">
+                        Search: &quot;{searchQuery}&quot;
+                      </span>
+                    )}
+                    {paymentStatusFilter && (
+                      <span className="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-md">
+                        Payment: {paymentStatusFilter === 'success' ? 'Success' : 'Failed'}
+                      </span>
+                    )}
+                    {downloadStatusFilter && (
+                      <span className="inline-flex items-center px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-md">
+                        Download: {downloadStatusFilter === 'downloaded' ? 'Success' : 'Failed'}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white overflow-y-auto overflow-x-auto overflow-y-scroll h-[700px] dark:bg-gray-900 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-800">
+                <table className="w-full max-w-full min-h-[20px]">
                   <thead className="bg-gray-100 dark:bg-gray-800">
                     <tr>
                       {[
@@ -363,6 +563,7 @@ export default function AdminDashboard() {
                         "Target Year",
                         "Amount (₹)",
                         "Razorpay Payment ID",
+                        "Razorpay Order ID",
                         "Payment Status",
                         "Download Status",
                         "Time",
@@ -383,7 +584,8 @@ export default function AdminDashboard() {
                               "w-32", // Payment Status
                               "w-32", // Download Status
                               "w-56", // Time
-                              "w-32", // Print PDF
+                              "w-56", // Razorpay Order ID
+                              "w-32 sticky -right-8 bg-gray-100 dark:bg-gray-800 z-10", // Print PDF - Fixed column
                             ][index],
                           ].join(" ")}
                         >
@@ -395,110 +597,183 @@ export default function AdminDashboard() {
                   <tbody>
                     {fetchingLoading
                       ? Array.from({ length: 5 }).map((_, i) => (
-                          <tr key={i} className="animate-pulse">
-                            {Array.from({ length: 12 }).map((_, j) => (
-                              <td
-                                key={j}
-                                className={[
-                                  "px-4 py-2 border-t border-gray-200 dark:border-gray-700 dark:text-white whitespace-nowrap",
-                                  [
-                                    "w-12", // S.No
-                                    "w-40", // Name
-                                    "w-56", // Email
-                                    "w-32", // Phone
-                                    "w-32", // Target Year
-                                    "w-20", // Amount
-                                    "w-56", // Razorpay Payment ID
-                                    "w-32", // Payment Status
-                                    "w-32", // Download Status
-                                    "w-56", // Time
-                                    "w-32", // Print PDF
-                                  ][j],
-                                ].join(" ")}
-                              >
-                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded skeleton-shimmer w-full"></div>
-                              </td>
-                            ))}
-                          </tr>
-                        ))
-                      : timetableData.map((item, index) => {
-                          const createdAt = new Date(item.createdAt);
-                          return (
-                            <tr
-                              key={index}
-                              className="hover:bg-gray-100 dark:hover:bg-gray-800"
+                        <tr key={i} className="animate-pulse">
+                          {Array.from({ length: 12 }).map((_, j) => (
+                            <td
+                              key={j}
+                              className={[
+                                "px-4 py-2 border-t border-gray-200 dark:border-gray-700 dark:text-white whitespace-nowrap",
+                                [
+                                  "w-12", // S.No 
+                                  "w-40", // Name
+                                  "w-56", // Email
+                                  "w-32", // Phone
+                                  "w-32", // Target Year
+                                  "w-20", // Amount
+                                  "w-56", // Razorpay Payment ID
+                                  "w-32", // Payment Status
+                                  "w-32", // Download Status
+                                  "w-56", // Time
+                                  "w-32 sticky right-0 bg-white dark:bg-gray-900 z-10", // Print PDF - Fixed column
+                                ][j],
+                              ].join(" ")}
                             >
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 whitespace-nowrap dark:text-[#64E9F8]">
-                                {index + 1}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#C9F7F5]">
-                                {item.fullName}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#34D399]">
-                                {item.email}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FFD700]">
-                                {item.contactNumber}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FF99CC]">
-                                {item.targetYear}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FFC107]">
-                                299
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#A7FFEB]">
-                                {item.razorpayOrderId}
-                              </td>
-                              <td className="px-4 py-2 flex items-center justify-center border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap">
-                                <span
-                                  className={`px-2 py-1 rounded-full ${
-                                    item.razorpayPaymentStatus === "success"
-                                      ? "bg-green-100 dark:bg-green-200 text-green-500"
-                                      : "bg-red-100 dark:bg-red-200 text-red-500"
+                              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded skeleton-shimmer w-full"></div>
+                            </td>
+                          ))}
+                        </tr>
+                      ))
+                      : currentData.map((item, index) => {
+                        const createdAt = new Date(item.createdAt);
+                        const globalIndex = startIndex + index;
+                        return (
+                          <tr
+                            key={globalIndex}
+                            className="hover:bg-gray-100   dark:hover:bg-gray-800"
+                          >
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 whitespace-nowrap dark:text-[#64E9F8]">
+                              {globalIndex + 1}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#C9F7F5]">
+                              {item.fullName}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#34D399]">
+                              {item.email}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FFD700]">
+                              {item.contactNumber}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FF99CC]">
+                              {item.targetYear}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FFC107]">
+                              299
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FFC107]">
+                              {item.razorpayPaymentId}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#A7FFEB]">
+                              {item.razorpayOrderId}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-center">
+                              <span
+                                className={`px-2 py-1 rounded-full ${item.razorpayPaymentStatus === "success"
+                                    ? "bg-green-100 dark:bg-green-200 text-green-500"
+                                    : "bg-red-100 dark:bg-red-200 text-red-500"
                                   }`}
-                                >
-                                  {" "}
-                                  {item.razorpayPaymentStatus === "failed"
-                                    ? "Failed"
-                                    : "Success"}
-                                </span>
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap">
-                                <span
-                                  className={`px-2 py-1 rounded-full ${
-                                    item.downloadStatus === "downloaded failed"
-                                      ? "bg-red-100 dark:bg-red-200 text-red-500"
-                                      : "bg-green-100 dark:bg-green-200 text-green-500"
+                              >
+                                {" "}
+                                {item.razorpayPaymentStatus === "failed"
+                                  ? "Failed"
+                                  : "Success"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-center">
+                              <span
+                                className={`px-2 py-1 rounded-full ${item.downloadStatus === "downloaded failed"
+                                    ? "bg-red-100 dark:bg-red-200 text-red-500"
+                                    : "bg-green-100 dark:bg-green-200 text-green-500"
                                   }`}
-                                >
-                                  {" "}
-                                  {item.downloadStatus === "downloaded failed"
-                                    ? "Failed"
-                                    : "Success"}
-                                </span>
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#99E1D9]">
-                                {new Intl.DateTimeFormat("en-IN", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  second: "2-digit",
-                                }).format(createdAt)}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#6EE7BC]">
-                                <button className="flex items-center gap-1 text-primary dark:text-blue-400 hover:underline">
-                                  <Download className="h-4 w-4" />
-                                  Download
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                              >
+                                {" "}
+                                {item.downloadStatus === "downloaded failed"
+                                  ? "Failed"
+                                  : "Success"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#99E1D9]">
+                              {new Intl.DateTimeFormat("en-IN", {
+                                year: "numeric",
+                                month: "long",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                              }).format(createdAt)}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#6EE7BC] sticky -right-6 bg-white dark:bg-gray-900 z-10">
+                              <button className="flex items-center gap-1 text-primary dark:text-blue-400 hover:underline">
+                                <Download className="h-4 w-4" />
+                                Download
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              {totalCount > 0 && (
+                <div className="flex items-center justify-between -mt-6 px-6 py-2 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-700 dark:text-gray-300">Show</label>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                      className="px-3 py-1 text-sm border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value={15}>15</option>
+                      <option value={25}>25</option>
+                      <option value={30}>30</option>
+                      <option value={50}>50</option>
+                    </select>
+                    <label className="text-sm text-gray-700 dark:text-gray-300">entries</label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={goToPrevPage}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      Previous
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => goToPage(pageNum)}
+                            className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${currentPage === pageNum
+                                ? 'z-10 bg-blue-50 border border-blue-500 text-blue-600 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700'
+                                : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+                              }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors"
+                    >
+                      Next
+                      <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </main>
         </div>

@@ -92,11 +92,12 @@ export function DailySchedule({
       }
 
       const orderData = await orderRes.json();
-
+      console.log("Razorpay order created:", orderData);
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: orderData.amount,
         currency: "INR",
+        razorpayPaymentId: orderData.payment_id,
         name: "Proxy Gyan Personalized UPSC Timetable",
         order_id: orderData.id,
         handler: async function (response: any) {

@@ -293,9 +293,9 @@ export function Review({ data, onRegenerate }: any) {
                       Week {weekKey}
                     </p>
                     <span className="text-xs sm:text-sm text-body">
-                      {moment(weekData[0]?.date, "DD-MM-YYYY").format("MMMM D")}
+                      {moment(weekData[0]?.date, "DD-MM-YYYY").format("MMM D")}
                       {" "}to{" "}
-                      {moment(weekData[weekData.length - 1]?.date, "DD-MM-YYYY").format("MMMM D")}
+                      {moment(weekData[weekData.length - 1]?.date, "DD-MM-YYYY").format("MMM D")}
                       {" "},{" "}
                       {moment(weekData[weekData.length - 1]?.date, "DD-MM-YYYY").endOf('month').format("YYYY")}
                     </span>
