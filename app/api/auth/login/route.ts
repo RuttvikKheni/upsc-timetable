@@ -9,7 +9,7 @@ connectDB();
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, domain } = body;
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
     response.cookies.set("token", token, {
       path: "/",
-      domain: process.env.FRONTEND_URL,
+      domain,
     });
 
     return response;

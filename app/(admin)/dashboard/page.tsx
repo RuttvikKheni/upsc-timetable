@@ -45,7 +45,7 @@ export default function AdminDashboard() {
   const router = useRouter();
    const handleLogout = () => {
     if (typeof document !== "undefined") {
-      document.cookie = `token=;expires=${new Date(0).toUTCString()};path=/;domain=${process.env.FRONTEND_URL}`;
+      document.cookie = `token=;expires=${new Date(0).toUTCString()};path=/;domain=${window.location.hostname}`;
     }
     localStorage.removeItem("userId");
     router.replace("/login");
