@@ -205,7 +205,7 @@ export function CurrentStatus({
               key={`${field}-${subject}`}
               htmlFor={`${field}-${subject}`}
               className={cn(
-                "px-3 py-1 rounded-full text-[11px] sm:text-[13px] font-medium cursor-pointer transition-colors border",
+                "px-3 py-1 rounded-full text-[11px] sm:text-[13px] font-medium cursor-pointer transition-colors border select-none",
                 {
                   "bg-primary text-white border-transparent": isChecked, // selected
                   "bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300": !isChecked, // unselected
@@ -260,7 +260,7 @@ export function CurrentStatus({
                       setSelectingYear(generateFutureYears(selectedYear));
                     }
                   }}
-                  className="border border-input focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded px-2 py-1 text-sm !w-full h-9"
+                  className="border border-input focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded px-2 py-1 text-sm !w-full h-9 select-none"
                   dateFormat="dd/MM/yyyy"
                   placeholderText="Choose a date"
                   minDate={new Date()}
@@ -298,7 +298,7 @@ export function CurrentStatus({
                     <label
                       key={year}
                       htmlFor={year}
-                      className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap ${isSelected
+                      className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
                         ? "bg-primary/10 text-primary border-primary"
                         : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
                         }`}
@@ -320,89 +320,91 @@ export function CurrentStatus({
             "difficultSubjects"
           )}
 
-          <div className="space-y-2">
-            <ul className="arrow-list">
-              <li>
-                <Label className="text-[13px] sm:text-[15px]">Have you completed NCERTs?</Label>
-              </li>
-            </ul>
-            <div className="space-y-2 pl-5">
-              <RadioGroup
-                value={formData.completedNCERTs}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, completedNCERTs: value })
-                }
-                className="flex flex-wrap gap-3"
-              >
-                {completedNCERTsOptions.map((option) => (
-                  <RadioGroupItem
-                    key={option.id}
-                    value={option.value}
-                    id={option.id}
-                    className="sr-only"
-                  />
-                ))}
-                {completedNCERTsOptions.map((option) => {
-                  const isSelected = formData.completedNCERTs === option.value
-                  return (
-                    <label
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2 col-span-2 sm:col-span-1">
+              <ul className="arrow-list">
+                <li>
+                  <Label className="text-[13px] sm:text-[15px]">Have you completed NCERTs?</Label>
+                </li>
+              </ul>
+              <div className="space-y-2 pl-5">
+                <RadioGroup
+                  value={formData.completedNCERTs}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, completedNCERTs: value })
+                  }
+                  className="flex flex-wrap gap-3"
+                >
+                  {completedNCERTsOptions.map((option) => (
+                    <RadioGroupItem
                       key={option.id}
-                      htmlFor={option.id}
-                      className={`flex items-center px-3 sm:px-4 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap ${isSelected
-                        ? "bg-primary/10 text-primary border-primary"
-                        : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-                        }`}
-                    >
-                      {option.icon}
-                      {option.label}
-                    </label>
-                  )
-                })}
-              </RadioGroup>
+                      value={option.value}
+                      id={option.id}
+                      className="sr-only"
+                    />
+                  ))}
+                  {completedNCERTsOptions.map((option) => {
+                    const isSelected = formData.completedNCERTs === option.value
+                    return (
+                      <label
+                        key={option.id}
+                        htmlFor={option.id}
+                        className={`flex items-center px-3 sm:px-4 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                          ? "bg-primary/10 text-primary border-primary"
+                          : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                          }`}
+                      >
+                        {option.icon}
+                        {option.label}
+                      </label>
+                    )
+                  })}
+                </RadioGroup>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <ul className="arrow-list">
-              <li>
-                <Label className="text-[13px] sm:text-[15px]">
-                  Have you completed standard UPSC books?
-                </Label>
-              </li>
-            </ul>
-            <div className="space-y-2 pl-5">
-              <RadioGroup
-                value={formData.completedStandardBooks}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, completedStandardBooks: value })
-                }
-                className="flex flex-wrap gap-3"
-              >
-                {standardBooksOptions.map((option) => (
-                  <RadioGroupItem
-                    key={option.id}
-                    value={option.value}
-                    id={option.id}
-                    className="sr-only"
-                  />
-                ))}
-                {standardBooksOptions.map((option) => {
-                  const isSelected = formData.completedStandardBooks === option.value
-                  return (
-                    <label
+            <div className="space-y-2 col-span-2 sm:col-span-1">
+              <ul className="arrow-list">
+                <li>
+                  <Label className="text-[13px] sm:text-[15px]">
+                    Have you completed standard UPSC books?
+                  </Label>
+                </li>
+              </ul>
+              <div className="space-y-2 pl-5">
+                <RadioGroup
+                  value={formData.completedStandardBooks}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, completedStandardBooks: value })
+                  }
+                  className="flex flex-wrap gap-3"
+                >
+                  {standardBooksOptions.map((option) => (
+                    <RadioGroupItem
                       key={option.id}
-                      htmlFor={option.id}
-                      className={`flex items-center px-3 sm:px-4 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap ${isSelected
-                        ? "bg-primary/10 text-primary border-primary"
-                        : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-                        }`}
-                    >
-                      {option.icon}
-                      {option.label}
-                    </label>
-                  )
-                })}
-              </RadioGroup>
+                      value={option.value}
+                      id={option.id}
+                      className="sr-only"
+                    />
+                  ))}
+                  {standardBooksOptions.map((option) => {
+                    const isSelected = formData.completedStandardBooks === option.value
+                    return (
+                      <label
+                        key={option.id}
+                        htmlFor={option.id}
+                        className={`flex items-center px-3 sm:px-4 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                          ? "bg-primary/10 text-primary border-primary"
+                          : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                          }`}
+                      >
+                        {option.icon}
+                        {option.label}
+                      </label>
+                    )
+                  })}
+                </RadioGroup>
+              </div>
             </div>
           </div>
 
@@ -450,7 +452,7 @@ export function CurrentStatus({
                     <label
                       key={option.id}
                       htmlFor={option.id}
-                      className={`flex items-center px-3 sm:px-4 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap ${isSelected
+                      className={`flex items-center px-3 sm:px-4 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
                         ? "bg-primary/10 text-primary border-primary"
                         : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
                         }`}
@@ -464,74 +466,75 @@ export function CurrentStatus({
             </div>
           </div>
 
-          {formData.selectedOptional === "yes" && (
-            <>
-              <div className="space-y-2 pl-5">
-                <Label className="text-[13px] sm:text-[15px]" htmlFor="optionalSubject">
-                  What is your Optional subject?
-                </Label>
-                <Input
-                  id="optionalSubject"
-                  value={formData.optionalSubject}
-                  onChange={(e) =>
-                    setFormData({ ...formData, optionalSubject: e.target.value })
-                  }
-                  required
-                />
-              </div>
+              {formData.selectedOptional === "yes" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2 pl-5 col-span-2 sm:col-span-1">
+                    <Label className="text-[13px] sm:text-[15px]" htmlFor="optionalSubject">
+                      What is your Optional subject?
+                    </Label>
+                    <Input
+                      id="optionalSubject"
+                      value={formData.optionalSubject}
+                      onChange={(e) =>
+                        setFormData({ ...formData, optionalSubject: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
 
-              <div className="space-y-2 pl-5">
-                <Label className="text-[13px] sm:text-[15px]">
-                  Have you started preparing for Optional?
-                </Label>
-                <div className="space-y-2">
-                  <RadioGroup
-                    value={formData.startedOptional}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, startedOptional: value })
-                    }
-                    className="flex gap-3"
-                  >
-                    {startedOptional.map((option) => (
-                      <RadioGroupItem
-                        key={option.id}
-                        value={option.value}
-                        id={option.id}
-                        className="sr-only"
-                      />
-                    ))}
-                    {startedOptional.map((option) => {
-                      const isSelected = formData.startedOptional === option.value
-                      return (
-                        <label
-                          key={option.id}
-                          htmlFor={option.id}
-                          className={`flex items-center px-3 sm:px-4 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap ${isSelected
-                            ? "bg-primary/10 text-primary border-primary"
-                            : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-                            }`}
-                        >
-                          {option.icon}
-                          {option.label}
-                        </label>
-                      )
-                    })}
-                  </RadioGroup>
+                  <div className="space-y-2 pl-5 sm:pl-0 col-span-2 sm:col-span-1">
+                    <Label className="text-[13px] sm:text-[15px]">
+                      Have you started preparing for Optional?
+                    </Label>
+                    <div className="space-y-2">
+                      <RadioGroup
+                        value={formData.startedOptional}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, startedOptional: value })
+                        }
+                        className="flex gap-3"
+                      >
+                        {startedOptional.map((option) => (
+                          <RadioGroupItem
+                            key={option.id}
+                            value={option.value}
+                            id={option.id}
+                            className="sr-only"
+                          />
+                        ))}
+                        {startedOptional.map((option) => {
+                          const isSelected = formData.startedOptional === option.value
+                          return (
+                            <label
+                              key={option.id}
+                              htmlFor={option.id}
+                              className={`flex items-center px-3 sm:px-4 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                                ? "bg-primary/10 text-primary border-primary"
+                                : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                                }`}
+                            >
+                              {option.icon}
+                              {option.label}
+                            </label>
+                          )
+                        })}
+                      </RadioGroup>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              )}
+              {validationError && (
+                <div className="!text-sm leading-[20px] text-[#D92D20] !mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="font-medium mb-1">Please complete the following:</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    {validationError.split(". ").map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+        
         </div>
-        {validationError && (
-          <div className="!text-sm leading-[20px] text-[#D92D20] !mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="font-medium mb-1">Please complete the following:</p>
-            <ul className="list-disc list-inside space-y-1">
-              {validationError.split(". ").map((error, index) => (
-                <li key={index}>{error}</li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
       <div className="flex justify-between items-center gap-2 mx-4">
         <Button type="button" variant="outline" className="gap-1 sm:gap-1.5" onClick={prevStep}>

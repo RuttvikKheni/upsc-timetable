@@ -47,6 +47,7 @@ export function DailySchedule({
         ? "one"
         : ""),
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleOffDayChange = (day: string) => {
     const updated = formData.weeklyOffDays.includes(day)
@@ -73,6 +74,7 @@ export function DailySchedule({
     }
 
     try {
+      setIsLoading(true);
       const isLoaded = await loadRazorpay();
       if (!isLoaded) {
         alert("Failed to load Razorpay SDK. Please try again.");
@@ -154,6 +156,8 @@ export function DailySchedule({
           } catch (error) {
             console.error("Error generating timetable:", error);
             alert("Failed to generate timetable. Please try again.");
+          } finally {
+            setIsLoading(false);
           }
         },
         prefill: {
@@ -161,7 +165,7 @@ export function DailySchedule({
           email: data.email,
         },
         theme: {
-          color: "#4F46E5",
+          color: "#582F88",
         },
       };
 
@@ -171,6 +175,7 @@ export function DailySchedule({
 
       rzp.on("payment.failed", function (response: any) {
         if (paymentFailedCalled) return;
+        setIsLoading(false);
         paymentFailedCalled = true;
         console.error("Payment Failed:", response.error);
         fetch("/api/timetable/generate-db-timetable", {
@@ -199,6 +204,7 @@ export function DailySchedule({
         // response.error.metadata.payment_id
       });
     } catch (error) {
+      setIsLoading(false);
       console.error("Error in payment:", error);
       alert("Failed to initiate payment. Please try again.");
     }
@@ -251,7 +257,7 @@ export function DailySchedule({
                     <label
                       key={option.id}
                       htmlFor={option.id}
-                      className={`flex items-center px-3 sm:px-4 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap ${isSelected
+                      className={`flex items-center px-3 sm:px-4 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
                         ? "bg-primary/10 text-primary border-primary"
                         : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
                         }`}
@@ -280,6 +286,7 @@ export function DailySchedule({
                   showSecond={false}
                   format="h:mm a"
                   placeholder="Select Start Time"
+                  className="select-none"
                   onChange={(e) => setFormData({ ...formData, preferredStartTime: moment(e).format('HH:mm') })}
                 />
                 <Clock3 className="absolute right-3 top-2.5 !w-4 !h-4 text-black pointer-events-none" />
@@ -300,6 +307,7 @@ export function DailySchedule({
                   showSecond={false}
                   format="h:mm a"
                   placeholder="Select End Time"
+                  className="select-none"
                   onChange={(e) => setFormData({ ...formData, sleepTime: moment(e).format('HH:mm') })}
                 />
                 <Clock3 className="absolute right-3 top-2.5 !w-4 !h-4 text-black pointer-events-none" />
@@ -318,13 +326,13 @@ export function DailySchedule({
             <div className="flex flex-wrap gap-4 ml-5">
               {weekDays.map((day) => {
 
-                const isChecked = formData.weeklyOffDays.includes(day.day);
+                const isChecked = formData.weeklyOffDays.includes(day.value);
 
                 return (
                   <label
                     key={day.day}
                     className={cn(
-                      "flex flex-col items-center justify-center w-16 sm:w-20 h-14 border rounded-md cursor-pointer text-xs font-medium transition-colors",
+                      "flex flex-col items-center justify-center w-16 sm:w-20 h-14 border rounded-md cursor-pointer text-xs font-medium transition-colors select-none",
                       {
                         "bg-primary text-white border-transparent": isChecked,
                         "bg-white text-gray-700 border-gray-300 hover:bg-gray-100": !isChecked,
@@ -333,10 +341,10 @@ export function DailySchedule({
                   >
                     <input
                       type="checkbox"
-                      id={`offday-${day.day}`}
+                      id={`offday-${day.value}`}
                       className="hidden"
-                      checked={formData.weeklyOffDays.includes(day.day)}
-                      onChange={() => handleOffDayChange(day.day)}
+                      checked={formData.weeklyOffDays.includes(day.value)}
+                      onChange={() => handleOffDayChange(day.value)}
                     />
                     <span>{day.day}</span>
                     <span className="text-base font-semibold">{day.short}</span>
@@ -364,20 +372,20 @@ export function DailySchedule({
               >
                 <div className="flex space-x-2 border rounded-sm p-2 sm:p-3 border-gray-300">
                   <RadioGroupItem value="one" id="one-subject" />
-                  <Label htmlFor="one-subject">
+                  <Label htmlFor="one-subject" className="select-none cursor-pointer w-full">
                     <p className="pb-2 text-black text-[13px] sm:text-[15px] font-normal"> One subject per day (focused study)</p>
                     <p className="font-normal text-xs sm:text-[13px]"> Deel dive into one subject for better retention and understanding</p>
                   </Label>
                 </div>
                 <div className="flex space-x-2 border rounded-sm p-2 sm:p-3 border-gray-300">
                   <RadioGroupItem value="two" id="two-subjects" />
-                  <Label htmlFor="two-subjects">
+                  <Label htmlFor="two-subjects" className="select-none cursor-pointer w-full">
                     <p className="pb-2 text-black text-[13px] sm:text-[15px] font-normal"> Two subjects per day (parallel study)</p>
                     <p className="font-normal text-xs sm:text-[13px]"> Switch between subjects to maintain engagement and varity</p>
                   </Label>
                 </div>
               </RadioGroup>
-              <p className="text-sm text-gray-600 !mt-6 flex flex-wrap gap-1.5 ml-5 border rounded-sm p-1.5 sm:p-2 pt-2.5 border-gray-200 bg-gray-100">
+              <p className="text-sm text-gray-600 !mt-6 flex flex-wrap gap-1.5 ml-5 border rounded-sm p-1.5 sm:p-2 pt-2.5 border-gray-200 bg-gray-100 select-none">
                 <Lightbulb className="!w-4 !h-4 mt-0.5" />
                 <div>
                   <p className="text-black text-[13px] sm:text-[15px] pb-0.5">Personalized Tip :</p>
@@ -391,13 +399,44 @@ export function DailySchedule({
           )}
         </div>
       </div>
-      <div className="flex justify-between items-center gap-2 mx-4">
+      <div className="flex justify-between items-center flex-wrap gap-2 mx-4">
         <Button type="button" variant="outline" className="gap-1 sm:gap-1.5" onClick={prevStep}>
           <ArrowLeft className="w-4 h-4" /> Back
         </Button>
         <span className="text-xs sm:text-sm">Step 4 of 5</span>
-        <Button type="button" className="gap-1 sm:gap-1.5" onClick={handleRazorpay}>
-          Continue <ArrowRight className="w-4 h-4" />
+        <Button type="button" className={`gap-1 sm:gap-1.5 w-[230px] ${isLoading && 'opacity-50 cursor-not-allowed'}`} onClick={handleRazorpay} disabled={isLoading}>
+          {
+            isLoading ? (
+              <div className="h-6 w-6 relative m-[2px] mx-auto">
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            ) : (
+              <>
+                Pay & Generate Timetable <ArrowRight className="w-4 h-4" />
+              </>
+            )
+          }
         </Button>
       </div>
     </form>

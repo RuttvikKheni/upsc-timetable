@@ -5,9 +5,12 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import clsx from "clsx";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./../ui/accordian";
+import { Select, SelectTrigger, SelectValue, SelectItem, SelectContent } from "./../ui/select";
+import moment from 'moment';
+
 import {
-  ChevronDown,
-  ChevronUp,
+  CalendarCheck,
   Download,
   Loader2,
   RefreshCw,
@@ -17,12 +20,21 @@ import { useToast } from "../ui/toast";
 import { generateTimetable } from "../../lib/gtt";
 
 export function Review({ data, onRegenerate }: any) {
-  const [activeWeek, setActiveWeek] = useState(1);
-  const [showAllWeeks, setShowAllWeeks] = useState(false);
+  const [activeWeek, setActiveWeek] = useState("week-1");
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const weekRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const initialWeeksToShow = 7;
   const { showToast } = useToast();
+
+  const weekRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const handleWeekSelect = (value: string) => {
+    setActiveWeek(value);
+
+    // Scroll to the selected week smoothly
+    const section = weekRefs.current[value];
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   const { downloadFile, isDownloading } = useDownload({
     onSuccess: () => {
@@ -73,14 +85,6 @@ export function Review({ data, onRegenerate }: any) {
     acc[week].push(day);
     return acc;
   }, {});
-
-  const scrollToWeek = (week: number) => {
-    const target = weekRefs.current[week];
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-      setActiveWeek(week);
-    }
-  };
 
   const getColor = (subject: string) => {
     if (subject === "OPTIONAL") return "text-indigo-600";
@@ -149,12 +153,22 @@ export function Review({ data, onRegenerate }: any) {
     try {
       // Use frontend generateTimetable function instead of API call
       console.log("data.formData", data.formData);
-      const newTimetable = generateTimetable(data.formData);
-      console.log("Regeneration result:", newTimetable);
+
+      const res = await fetch("/api/generate-timetable", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data.formData }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to generate timetable");
+      }
+
+      const result = await res.json();
 
       if (onRegenerate) {
         // Pass the result in the same format as the API would return
-        onRegenerate({ timetable: newTimetable });
+        onRegenerate({ timetable: result.timetable });
       }
 
       showToast("Timetable regenerated successfully!", "success");
@@ -167,20 +181,55 @@ export function Review({ data, onRegenerate }: any) {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between gap-2">
-            <CardTitle className="leading-[30px]">
+    <div className="">
+      <div className="space-y-6 !border-0 w-full mx-auto bg-white rounded-md !p-4 sm:!p-6 my-4 sm:my-6">
+        <CardHeader className="!p-0">
+          <div>
+            <CardTitle className="!text-lg sm:!text-xl lg:!text-[24px] leading-[30px] text-center mb-2">
               Your Personalized Timetable is Ready
             </CardTitle>
-            <div className="flex items-center gap-2">
-              {/* Development Only: Regenerate Button */}
-              {process.env.NODE_ENV === "development" && (
+            <p className="text-[13px] sm:text-[15px] text-center">Review your schedule below and start planning your day with ease.</p>
+            <div className="flex flex-wrap items-center gap-2 justify-center my-4">
+              <p className="text-muted-foreground text-[13px] bg-gray-100 text-gray-700 py-1 px-3 rounded-full flex items-center gap-1.5">
+                <CalendarCheck className="!w-4 !h-4" /> Total Days: {uniqueDates.length}
+              </p>
+              <p className="text-muted-foreground text-[13px] bg-gray-100 text-gray-700 py-1 px-3 rounded-full">
+                Start Date: {uniqueDates[0]}
+              </p>
+              <p className="text-muted-foreground text-[13px] bg-gray-100 text-gray-700 py-1 px-3 rounded-full">
+                End Date: {uniqueDates[uniqueDates.length - 1]}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <div>
+                <Select
+                  defaultValue="week-1"
+                  value={activeWeek}
+                  onValueChange={handleWeekSelect}
+                >
+                  <SelectTrigger className="ml-auto !h-8 sm:!h-9 gap-1 w-fit max-w-[150px] select-none">
+                    <SelectValue placeholder="Jump to Week" className="text-nowrap" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px] w-full">
+                    {Object.entries(weeks).map(([weekKey]: [string, any]) => {
+
+                      return (
+                        <SelectItem
+                          key={weekKey}
+                          value={`week-${weekKey}`}
+                        >
+                          Week {weekKey}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+              {process.env.NODE_ENV === "development" && false && (
                 <Button
                   onClick={regenerateTimetable}
                   disabled={isRegenerating}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 !h-8 sm:!h-9"
                   variant="secondary"
                 >
                   {isRegenerating ? (
@@ -200,8 +249,7 @@ export function Review({ data, onRegenerate }: any) {
               <Button
                 onClick={downloadPDF}
                 disabled={isDownloading}
-                className="flex items-center gap-2"
-                variant="outline"
+                className="flex items-center gap-2 !h-8 sm:!h-9"
               >
                 {isDownloading ? (
                   <>
@@ -218,215 +266,173 @@ export function Review({ data, onRegenerate }: any) {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-muted-foreground text-[15px]">
-                Total Days: {uniqueDates.length}
-              </p>
-              <div>
-                <p className="text-muted-foreground text-[15px]">
-                  Start Date: {uniqueDates[0]}
-                </p>
-                <p className="text-muted-foreground text-[15px]">
-                  End Date: {uniqueDates[uniqueDates.length - 1]}
-                </p>
-              </div>
-            </div>
-
-            {/* Week Navigator */}
-            <div className="flex flex-wrap gap-2 sticky top-0 bg-white z-10 py-2 justify-center sm:justify-start">
-              {Object.keys(weeks)
-                .slice(0, showAllWeeks ? undefined : initialWeeksToShow)
-                .map((weekKey: any) => {
-                  const week = parseInt(weekKey);
-                  return (
-                    <Button
-                      key={week}
-                      variant={activeWeek === week ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => scrollToWeek(week)}
-                      className="hover:bg-[#FFC300] hover:text-black"
-                    >
-                      Week {week}
-                    </Button>
-                  );
-                })}
-
-              {Object.keys(weeks).length > initialWeeksToShow && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAllWeeks(!showAllWeeks)}
-                  className="flex items-center gap-1"
-                >
-                  {showAllWeeks ? (
-                    <>
-                      <ChevronUp className="h-4 w-4" />
-                      <span>Less</span>
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="h-4 w-4" />
-                      <span>More</span>
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-
-            {/* Timetable Display */}
-            <div className="space-y-8">
-              {Object.entries(weeks).map(
-                ([weekKey, weekData]: [string, any]) => {
-                  const week = parseInt(weekKey);
-                  return (
-                    <div
-                      key={week}
-                      ref={(el) => {
-                        if (el) weekRefs.current[week] = el;
-                      }}
-                      className="space-y-4"
-                    >
-                      <h3 className="text-lg font-semibold">Week {week}</h3>
-                      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                        {weekData.map((day: any) => (
-                          <Card
-                            className="bg-[#57308908] relative"
-                            key={day.dayCount}
-                          >
-                            <CardContent>
-                              <div className="space-y-2">
-                                <div className="absolute text-nowrap top-0 left-0">
-                                  <CardHeader className="pb-2">
-                                    <CardTitle className="text-[15px]">
-                                      Day {day.dayCount} - {day.date}
-                                    </CardTitle>
-                                  </CardHeader>
-                                </div>
-
-                                <div className="pt-10 text-red-500">
-                                  <b>{day.activities.length && day.activities[0]?.isHoliday}</b>
-                                </div>
-
-                                {day.activities.map(
-                                  (activity: any, index: number) => (
-                                    <div
-                                      key={index}
-                                      className={`pt-2 first:pt-0 ${index === 0
-                                        ? "first:!border-t-0"
-                                        : "!border-t"
-                                        }`}
+      </div>
+      <div className="space-y-6 !border-0 w-full mx-auto bg-white rounded-md !p-4 !pt-0 sm:!pt-2 sm:!p-6 my-4 sm:my-6">
+        <Accordion
+          type="single"
+          className="w-full"
+          collapsible
+          value={activeWeek}
+          onValueChange={setActiveWeek}
+        >
+          {Object.entries(weeks).map(([weekKey, weekData]: [string, any]) => (
+            <AccordionItem
+              key={weekKey}
+              value={`week-${weekKey}`}
+              ref={(el) => {
+                weekRefs.current[`week-${weekKey}`] = el;
+              }}
+            >
+              <AccordionTrigger className="hover:no-underline select-none">
+                <div className="flex items-center gap-2">
+                  <div className="bg-primary text-white rounded-md w-10 h-10 flex items-center justify-center text-lg font-semibold">
+                    {weekKey}
+                  </div>
+                  <div>
+                    <p className="text-sm md:text-base lg:text-lg font-semibold text-left">
+                      Week {weekKey}
+                    </p>
+                    <span className="text-xs sm:text-sm text-body">
+                      {moment(weekData[0]?.date, "DD-MM-YYYY").format("MMMM D")}
+                      {" "}to{" "}
+                      {moment(weekData[weekData.length - 1]?.date, "DD-MM-YYYY").format("MMMM D")}
+                      {" "},{" "}
+                      {moment(weekData[weekData.length - 1]?.date, "DD-MM-YYYY").endOf('month').format("YYYY")}
+                    </span>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="mb-4">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                  {weekData.map((day: any) => (
+                    <Card key={day.dayCount} className="bg-[#57308908] relative">
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="absolute text-nowrap top-0 left-0">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-[15px]">
+                                Day {day.dayCount} - {day.date}
+                              </CardTitle>
+                            </CardHeader>
+                          </div>
+                          <div className="pt-10 text-red-500">
+                            <b>{day.activities.length && day.activities[0]?.isHoliday}</b>
+                          </div>
+                          {day.activities.map((activity: any, index: number) => (
+                            <div
+                              key={index}
+                              className={`pt-2 first:pt-0 ${index === 0
+                                ? "first:!border-t-0"
+                                : "!border-t"
+                                }`}
+                            >
+                              <div
+                                className={`flex !items-start mb-2 gap-2 relative ${activity.SUBJECT ? "" : "justify-end"
+                                  } ${(activity.SUBJECT &&
+                                    !activity["MAIN SUBJECT"]) ||
+                                    activity.SUBTOPICS ===
+                                    "Complete subject review and consolidation"
+                                    ? "justify-end"
+                                    : "justify-between"
+                                  }`}
+                              >
+                                {activity.SUBJECT &&
+                                  activity.SUBTOPICS !==
+                                  "Complete subject review and consolidation" && (
+                                    <h4
+                                      className={`font-medium text-[15px]`}
                                     >
-                                      <div
-                                        className={`flex !items-start mb-2 gap-2 relative ${activity.SUBJECT ? "" : "justify-end"
-                                          } ${(activity.SUBJECT &&
-                                            !activity["MAIN SUBJECT"]) ||
-                                            activity.SUBTOPICS ===
-                                            "Complete subject review and consolidation"
-                                            ? "justify-end"
-                                            : "justify-between"
-                                          }`}
-                                      >
-                                        {activity.SUBJECT &&
-                                          activity.SUBTOPICS !==
-                                          "Complete subject review and consolidation" && (
-                                            <h4
-                                              className={`font-medium text-[15px]`}
-                                            >
-                                              {activity.SUBJECT}
-                                            </h4>
-                                          )}
-                                        <span
-                                          className={clsx(
-                                            `text-sm font-medium text-end ${activity.SUBJECT
-                                              ? "w-[100px]"
-                                              : ""
-                                            }`,
-                                            getColor(activity["MAIN SUBJECT"])
-                                          )}
-                                        >
-                                          {activity["MAIN SUBJECT"]}
-                                        </span>
-                                      </div>
-                                      <div className="space-y-2 text-sm">
-                                        {activity.TOPIC && (
-                                          <div>
-                                            <Label className="text-muted-foreground">
-                                              Topic
-                                            </Label>
-                                            <p>{activity.TOPIC}</p>
+                                      {activity.SUBJECT}
+                                    </h4>
+                                  )}
+                                <span
+                                  className={clsx(
+                                    `text-sm font-medium text-end ${activity.SUBJECT
+                                      ? "w-[100px]"
+                                      : ""
+                                    }`,
+                                    getColor(activity["MAIN SUBJECT"])
+                                  )}
+                                >
+                                  {activity["MAIN SUBJECT"]}
+                                </span>
+                              </div>
+                              <div className="space-y-2 text-sm">
+                                {activity.TOPIC && (
+                                  <div>
+                                    <Label className="text-muted-foreground">
+                                      Topic
+                                    </Label>
+                                    <p>{activity.TOPIC}</p>
+                                  </div>
+                                )}
+                                {activity.SUBTOPICS && (
+                                  <div>
+                                    <Label className="text-muted-foreground">
+                                      Subtopics
+                                    </Label>
+                                    <ol className="list-inside mt-1 space-y-1 list-decimal">
+                                      {activity.SUBTOPICS.split(
+                                        " | "
+                                      ).map(
+                                        (
+                                          subtopic: string,
+                                          index: number
+                                        ) => (
+                                          <div
+                                            key={index}
+                                            className="flex items-start"
+                                          >
+                                            <li className="text-sm"></li>
+                                            <span className="text-xs mt-1">
+                                              {subtopic.trim()}
+                                            </span>
                                           </div>
-                                        )}
-                                        {activity.SUBTOPICS && (
-                                          <div>
-                                            <Label className="text-muted-foreground">
-                                              Subtopics
-                                            </Label>
-                                            <ol className="list-inside mt-1 space-y-1 list-decimal">
-                                              {activity.SUBTOPICS.split(
-                                                " | "
-                                              ).map(
-                                                (
-                                                  subtopic: string,
-                                                  index: number
-                                                ) => (
-                                                  <div
-                                                    key={index}
-                                                    className="flex items-start"
-                                                  >
-                                                    <li className="text-sm"></li>
-                                                    <span className="text-xs mt-1">
-                                                      {subtopic.trim()}
-                                                    </span>
-                                                  </div>
-                                                )
-                                              )}
-                                            </ol>
-                                          </div>
-                                        )}
-                                        {activity?.HOURS && (
-                                          <div>
-                                            <Label className="text-muted-foreground">
-                                              {activity.HOURS > 1
-                                                ? "Hours"
-                                                : "Hour"}
-                                            </Label>
-                                            <p>
-                                              {activity.HOURS}{" "}
-                                              {activity.HOURS > 1
-                                                ? "hours"
-                                                : "hour"}
-                                            </p>
-                                          </div>
-                                        )}
-                                        {activity.RECOMMENDED_SOURCES && (
-                                          <div>
-                                            <Label className="text-muted-foreground">
-                                              Recommended Sources
-                                            </Label>
-                                            <p className="text-sm">
-                                              {activity.RECOMMENDED_SOURCES}
-                                            </p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )
+                                        )
+                                      )}
+                                    </ol>
+                                  </div>
+                                )}
+                                {activity?.HOURS && (
+                                  <div>
+                                    <Label className="text-muted-foreground">
+                                      {activity.HOURS > 1
+                                        ? "Hours"
+                                        : "Hour"}
+                                    </Label>
+                                    <p>
+                                      {activity.HOURS}{" "}
+                                      {activity.HOURS > 1
+                                        ? "hours"
+                                        : "hour"}
+                                    </p>
+                                  </div>
+                                )}
+                                {activity.RECOMMENDED_SOURCES && (
+                                  <div>
+                                    <Label className="text-muted-foreground">
+                                      Recommended Sources
+                                    </Label>
+                                    <p className="text-sm">
+                                      {activity.RECOMMENDED_SOURCES}
+                                    </p>
+                                  </div>
                                 )}
                               </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                              {/* Same SUBJECT, TOPIC, HOURS logic */}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
     </div>
   );
+
 }

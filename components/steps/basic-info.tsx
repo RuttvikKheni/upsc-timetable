@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { ArrowRight, Briefcase, GalleryThumbnails, GraduationCap, User } from "lucide-react";
+import { ArrowRight, Briefcase, Clock, GalleryThumbnails, GraduationCap, Mail, Phone, User } from "lucide-react";
 
 interface BasicInfoProps {
   data: any;
@@ -35,7 +35,7 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
 
   const aspirantOptions = [
     { id: "full-time", value: "full-time", label: "Full-Time", icon: <GraduationCap className="w-4 h-4 mr-2" /> },
-    { id: "part-time", value: "part-time", label: "Part-Time", icon: <GalleryThumbnails className="w-4 h-4 mr-2" /> },
+    { id: "part-time", value: "part-time", label: "Part-Time", icon: <Clock className="w-4 h-4 mr-2" /> },
     { id: "working", value: "working professional", label: "Working Professional", icon: <Briefcase className="w-4 h-4 mr-2" /> },
   ]
 
@@ -47,7 +47,10 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
           <p className="text-[13px] sm:text-[15px] text-center !mt-1 sm:!mt-2">Let&apos;s start with your basic details</p>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2 col-span-2 sm:col-span-1">
-              <Label className="text-[13px] sm:text-[15px]" htmlFor="fullName">Full Name</Label>
+              <Label className="text-[13px] sm:text-[15px] flex items-center gap-1.5" htmlFor="fullName">
+                <User className="w-4 h-4" />
+                Full Name
+              </Label>
               <Input
                 id="fullName"
                 value={formData.fullName}
@@ -58,7 +61,10 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
             </div>
 
             <div className="space-y-2 col-span-2 sm:col-span-1">
-              <Label className="text-[13px] sm:text-[15px]" htmlFor="email">Email</Label>
+              <Label className="text-[13px] sm:text-[15px] flex items-center gap-1.5" htmlFor="email">
+                <Mail className="w-4 h-4" />
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -70,7 +76,10 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
             </div>
 
             <div className="space-y-2 col-span-2">
-              <Label className="text-[13px] sm:text-[15px]" htmlFor="contactNumber">Contact Number</Label>
+              <Label className="text-[13px] sm:text-[15px] flex items-center gap-1.5" htmlFor="contactNumber">
+                <Phone className="w-4 h-4" />
+                Contact Number
+              </Label>
               <Input
                 id="contactNumber"
                 type="tel"
@@ -81,7 +90,10 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
               />
             </div>
             <div className="space-y-2 col-span-2">
-              <Label className="text-[13px] sm:text-[15px]">Aspirant Type</Label>
+              <Label className="text-[13px] sm:text-[15px] flex items-center gap-1.5">
+                <GalleryThumbnails className="w-4 h-4" />
+                Aspirant Type
+              </Label>
               <RadioGroup
                 value={formData.aspirantType}
                 onValueChange={(value) => setFormData({ ...formData, aspirantType: value })}
@@ -101,7 +113,7 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
                     <label
                       key={option.id}
                       htmlFor={option.id}
-                      className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap ${isSelected
+                      className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
                         ? "bg-primary/10 text-primary border-primary"
                         : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
                         }`}
@@ -116,7 +128,7 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
           </div>
         </div>
         <div className="flex justify-between items-center gap-2 mx-4">
-          <Button type="button" className="w-[80px] !bg-transparent !border-transparent hover:!border-transparent !shadow-none !cursor-default" variant="outline"></Button>
+          <div className="w-[80px]" />
           <span className="text-xs sm:text-sm">Step 1 of 5</span>
           <Button type="submit" className="gap-1 sm:gap-1.5">
             Continue <ArrowRight className="w-4 h-4" />
