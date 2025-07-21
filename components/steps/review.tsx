@@ -7,17 +7,22 @@ import clsx from "clsx";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./../ui/accordian";
 import { Select, SelectTrigger, SelectValue, SelectItem, SelectContent } from "./../ui/select";
-import moment from 'moment';
 
 import {
-  CalendarCheck,
+  CalendarDays,
+  Clock,
   Download,
+  Flag,
   Loader2,
+  Pencil,
+  PencilLine,
+  PlayCircle,
   RefreshCw,
+  SquareCode,
 } from "lucide-react";
 import { useDownload } from "../../lib/hooks/useDownload";
 import { useToast } from "../ui/toast";
-import { generateTimetable } from "../../lib/gtt";
+import moment from "moment";
 
 export function Review({ data, onRegenerate }: any) {
   const [activeWeek, setActiveWeek] = useState("week-1");
@@ -107,7 +112,7 @@ export function Review({ data, onRegenerate }: any) {
       const filename = `upsc-timetable-${new Date().toISOString().split("T")[0]
         }.pdf`;
 
-      const result: any = await downloadFile("/api/download-pdf", filename, {
+      await downloadFile("/api/download-pdf", filename, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -116,23 +121,22 @@ export function Review({ data, onRegenerate }: any) {
           timetableData: data.generatedTimetable,
         }),
       });
-      if (result) {
-        const res = await fetch("/api/timetable/downloadhandle", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            timeTableId: localStorage.getItem("timetableId"),
-          }),
-        });
-        if (!res.ok) {
-          throw new Error("Failed to download timetable");
-        }
-        if (res.ok) {
-          localStorage.removeItem("timetableId");
-        }
-
+      
+      // If we reach here, download was successful
+      const res = await fetch("/api/timetable/downloadhandle", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          timeTableId: localStorage.getItem("timetableId"),
+        }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update download status");
+      }
+      if (res.ok) {
+        localStorage.removeItem("timetableId");
       }
     } catch (error) {
       // Error handling is done in the hook
@@ -152,7 +156,6 @@ export function Review({ data, onRegenerate }: any) {
 
     try {
       // Use frontend generateTimetable function instead of API call
-      console.log("data.formData", data.formData);
 
       const res = await fetch("/api/generate-timetable", {
         method: "POST",
@@ -181,7 +184,7 @@ export function Review({ data, onRegenerate }: any) {
   };
 
   return (
-    <div className="">
+    <div>
       <div className="space-y-6 !border-0 w-full mx-auto bg-white rounded-md !p-4 sm:!p-6 my-4 sm:my-6">
         <CardHeader className="!p-0">
           <div>
@@ -191,13 +194,13 @@ export function Review({ data, onRegenerate }: any) {
             <p className="text-[13px] sm:text-[15px] text-center">Review your schedule below and start planning your day with ease.</p>
             <div className="flex flex-wrap items-center gap-2 justify-center my-4">
               <p className="text-muted-foreground text-[13px] bg-gray-100 text-gray-700 py-1 px-3 rounded-full flex items-center gap-1.5">
-                <CalendarCheck className="!w-4 !h-4" /> Total Days: {uniqueDates.length}
+                <CalendarDays className="!w-4 !h-4" /> Total Days: {uniqueDates.length}
               </p>
-              <p className="text-muted-foreground text-[13px] bg-gray-100 text-gray-700 py-1 px-3 rounded-full">
-                Start Date: {uniqueDates[0]}
+              <p className="text-muted-foreground text-[13px] bg-gray-100 text-gray-700 py-1 px-3 rounded-full flex items-center gap-1.5">
+                <PlayCircle className="!w-4 !h-4" /> Start Date: {uniqueDates[0]}
               </p>
-              <p className="text-muted-foreground text-[13px] bg-gray-100 text-gray-700 py-1 px-3 rounded-full">
-                End Date: {uniqueDates[uniqueDates.length - 1]}
+              <p className="text-muted-foreground text-[13px] bg-gray-100 text-gray-700 py-1 px-3 rounded-full flex items-center gap-1.5">
+                <Flag className="!w-4 !h-4" /> End Date: {uniqueDates[uniqueDates.length - 1]}
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
@@ -305,14 +308,17 @@ export function Review({ data, onRegenerate }: any) {
               <AccordionContent className="mb-4">
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                   {weekData.map((day: any) => (
-                    <Card key={day.dayCount} className="bg-[#57308908] relative">
+                    <Card key={day.dayCount} className="relative">
                       <CardContent>
-                        <div className="space-y-2">
-                          <div className="absolute text-nowrap top-0 left-0">
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-[15px]">
-                                Day {day.dayCount} - {day.date}
+                        <div className="space-y-3">
+                          <div className="absolute text-nowrap top-0 left-0 w-full">
+                            <CardHeader className="flex items-end justify-between flex-row">
+                              <CardTitle className="text-sm md:text-[15px]">
+                                {`Day ${day.dayCount}`}{"\u00A0\u00A0\u00A0-\u00A0\u00A0\u00A0"}({day.date})
                               </CardTitle>
+                              <h2 className="text-xs md:text-[13px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                {moment(day.date, "DD-MM-YYYY").format("dddd")}
+                              </h2>
                             </CardHeader>
                           </div>
                           <div className="pt-10 text-red-500">
@@ -321,13 +327,13 @@ export function Review({ data, onRegenerate }: any) {
                           {day.activities.map((activity: any, index: number) => (
                             <div
                               key={index}
-                              className={`pt-2 first:pt-0 ${index === 0
-                                ? "first:!border-t-0"
-                                : "!border-t"
+                              className={`p-4 first:pt-0 bg-gray-100 rounded-md ${index === 0
+                                ? "!mt-6"
+                                : ""
                                 }`}
                             >
                               <div
-                                className={`flex !items-start mb-2 gap-2 relative ${activity.SUBJECT ? "" : "justify-end"
+                                className={`flex !items-start mb-4 gap-2 relative ${activity.SUBJECT ? "" : "justify-end"
                                   } ${(activity.SUBJECT &&
                                     !activity["MAIN SUBJECT"]) ||
                                     activity.SUBTOPICS ===
@@ -360,18 +366,24 @@ export function Review({ data, onRegenerate }: any) {
                               <div className="space-y-2 text-sm">
                                 {activity.TOPIC && (
                                   <div>
-                                    <Label className="text-muted-foreground">
-                                      Topic
-                                    </Label>
-                                    <p>{activity.TOPIC}</p>
+                                    <div className="flex items-center gap-2">
+                                      <Pencil className="w-[14px] h-[14px] text-muted-foreground" strokeWidth={3} />
+                                      <Label className="text-muted-foreground">
+                                        Topic
+                                      </Label>
+                                    </div>
+                                    <p className="mt-1 ml-[19px]">{activity.TOPIC}</p>
                                   </div>
                                 )}
                                 {activity.SUBTOPICS && (
                                   <div>
-                                    <Label className="text-muted-foreground">
-                                      Subtopics
-                                    </Label>
-                                    <ol className="list-inside mt-1 space-y-1 list-decimal">
+                                    <div className="flex items-center gap-2">
+                                      <PencilLine className="w-[14px] h-[14px] text-muted-foreground" strokeWidth={3} />
+                                      <Label className="text-muted-foreground">
+                                        Subtopics
+                                      </Label>
+                                    </div>
+                                    <ol className="list-inside mt-1 space-y-1 list-decimal ml-[19px]">
                                       {activity.SUBTOPICS.split(
                                         " | "
                                       ).map(
@@ -395,12 +407,15 @@ export function Review({ data, onRegenerate }: any) {
                                 )}
                                 {activity?.HOURS && (
                                   <div>
-                                    <Label className="text-muted-foreground">
-                                      {activity.HOURS > 1
-                                        ? "Hours"
-                                        : "Hour"}
-                                    </Label>
-                                    <p>
+                                    <div className="flex items-center gap-2">
+                                      <Clock className="w-[14px] h-[14px] text-muted-foreground" strokeWidth={3} />
+                                      <Label className="text-muted-foreground">
+                                        {activity.HOURS > 1
+                                          ? "Hours"
+                                          : "Hour"}
+                                      </Label>
+                                    </div>
+                                    <p className="ml-[19px] mt-1">
                                       {activity.HOURS}{" "}
                                       {activity.HOURS > 1
                                         ? "hours"
@@ -410,10 +425,13 @@ export function Review({ data, onRegenerate }: any) {
                                 )}
                                 {activity.RECOMMENDED_SOURCES && (
                                   <div>
-                                    <Label className="text-muted-foreground">
-                                      Recommended Sources
-                                    </Label>
-                                    <p className="text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <SquareCode className="w-[14px] h-[14px] text-muted-foreground" strokeWidth={3} />
+                                      <Label className="text-muted-foreground">
+                                        Recommended Sources
+                                      </Label>
+                                    </div>
+                                    <p className="text-sm ml-[19px] mt-1">
                                       {activity.RECOMMENDED_SOURCES}
                                     </p>
                                   </div>

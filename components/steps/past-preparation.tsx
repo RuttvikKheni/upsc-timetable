@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+import * as yup from "yup";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
 import { ArrowLeft, ArrowRight, Award, BarChart3, Check, CheckCheck, FileCheck, GraduationCap, MessageSquareX, X } from "lucide-react";
+import { pastPreparationValidationSchema } from "../../schema/schema";
 
 
 interface PastPreparationProps {
@@ -13,6 +15,7 @@ interface PastPreparationProps {
   nextStep: () => void;
   prevStep: () => void;
 }
+
 
 export function PastPreparation({
   data,
@@ -29,11 +32,28 @@ export function PastPreparation({
     academicPerformance: data.academicPerformance || "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateData(formData);
-    nextStep();
-    localStorage.setItem("basicInfo", JSON.stringify(Object.assign(formData, data)));
+
+    try {
+      await pastPreparationValidationSchema.validate(formData, { abortEarly: false });
+      setErrors({});
+      updateData(formData);
+      nextStep();
+      localStorage.setItem("basicInfo", JSON.stringify(Object.assign(formData, data)));
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        const newErrors: Record<string, string> = {};
+        error.inner.forEach((err) => {
+          if (err.path) {
+            newErrors[err.path] = err.message;
+          }
+        });
+        setErrors(newErrors);
+      }
+    }
   };
   useEffect(() => {
     const storedData = localStorage.getItem("basicInfo");
@@ -67,9 +87,12 @@ export function PastPreparation({
               <div className="space-y-2">
                 <RadioGroup
                   value={formData.attemptedBefore}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, attemptedBefore: value })
-                  }
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, attemptedBefore: value });
+                    if (errors.attemptedBefore) {
+                      setErrors({ ...errors, attemptedBefore: "" });
+                    }
+                  }}
                   className="flex gap-3"
                 >
                   {attemptedOptions.map((option) => (
@@ -97,6 +120,9 @@ export function PastPreparation({
                     )
                   })}
                 </RadioGroup>
+                {errors.attemptedBefore && (
+                  <p className="text-red-500 text-xs mt-1">{errors.attemptedBefore}</p>
+                )}
               </div>
             </div>
             {formData.attemptedBefore === "yes" && (
@@ -112,12 +138,18 @@ export function PastPreparation({
                   <Input
                     id="prelimsScore"
                     value={formData.prelimsScore}
-                    onChange={(e) =>
-                      setFormData({ ...formData, prelimsScore: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, prelimsScore: e.target.value });
+                      if (errors.prelimsScore) {
+                        setErrors({ ...errors, prelimsScore: "" });
+                      }
+                    }}
                     placeholder="Enter Prelims Score"
-                    required
+                    className={errors.prelimsScore ? "border-red-500" : ""}
                   />
+                  {errors.prelimsScore && (
+                    <p className="text-red-500 text-xs mt-1">{errors.prelimsScore}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -132,9 +164,12 @@ export function PastPreparation({
               <div className="space-y-2">
                 <RadioGroup
                   value={formData.clearedMains}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, clearedMains: value })
-                  }
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, clearedMains: value });
+                    if (errors.clearedMains) {
+                      setErrors({ ...errors, clearedMains: "" });
+                    }
+                  }}
                   className="flex gap-3"
                 >
                   {clearedOptions.map((option) => (
@@ -162,6 +197,9 @@ export function PastPreparation({
                     )
                   })}
                 </RadioGroup>
+                {errors.clearedMains && (
+                  <p className="text-red-500 text-xs mt-1">{errors.clearedMains}</p>
+                )}
               </div>
             </div>
 
@@ -178,12 +216,18 @@ export function PastPreparation({
                   <Input
                     id="mainsScore"
                     value={formData.mainsScore}
-                    onChange={(e) =>
-                      setFormData({ ...formData, mainsScore: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, mainsScore: e.target.value });
+                      if (errors.mainsScore) {
+                        setErrors({ ...errors, mainsScore: "" });
+                      }
+                    }}
                     placeholder="Enter Mains Score"
-                    required
+                    className={errors.mainsScore ? "border-red-500" : ""}
                   />
+                  {errors.mainsScore && (
+                    <p className="text-red-500 text-xs mt-1">{errors.mainsScore}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -198,15 +242,21 @@ export function PastPreparation({
               <Textarea
                 id="academicQualification"
                 value={formData.academicQualification}
-                onChange={(e) =>
+                onChange={(e) => {
                   setFormData({
                     ...formData,
                     academicQualification: e.target.value,
-                  })
-                }
+                  });
+                  if (errors.academicQualification) {
+                    setErrors({ ...errors, academicQualification: "" });
+                  }
+                }}
                 placeholder="e.g. B.Tech in Computer Science"
-                required
+                className={errors.academicQualification ? "border-red-500" : ""}
               />
+              {errors.academicQualification && (
+                <p className="text-red-500 text-xs mt-1">{errors.academicQualification}</p>
+              )}
             </div>
           </div>
 
@@ -220,12 +270,18 @@ export function PastPreparation({
               <Textarea
                 id="academicPerformance"
                 value={formData.academicPerformance}
-                onChange={(e) =>
-                  setFormData({ ...formData, academicPerformance: e.target.value })
-                }
+                onChange={(e) => {
+                  setFormData({ ...formData, academicPerformance: e.target.value });
+                  if (errors.academicPerformance) {
+                    setErrors({ ...errors, academicPerformance: "" });
+                  }
+                }}
                 placeholder="e.g. 85% in school, 8.2 CGPA in college"
-                required
+                className={errors.academicPerformance ? "border-red-500" : ""}
               />
+              {errors.academicPerformance && (
+                <p className="text-red-500 text-xs mt-1">{errors.academicPerformance}</p>
+              )}
             </div>
           </div>
         </div>

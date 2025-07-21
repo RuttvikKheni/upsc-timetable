@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
-import { Input } from "../ui/input";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { loadRazorpay } from "../../lib/loadRazorpay";
-import { ArrowLeft, ArrowRight, Clock3, Lightbulb } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, CalendarMinus2, Clock3, Lightbulb, Moon, SunMedium } from "lucide-react";
 import { cn } from "../../lib/utils";
 import TimePicker from 'rc-time-picker';
 import moment from 'moment';
 import 'rc-time-picker/assets/index.css';
+import * as yup from 'yup';
+import { useFormik } from 'formik';
+import { dailyScheduleValidationSchema } from "../../schema/schema";
 
 interface DailyScheduleProps {
   data: any;
@@ -28,6 +30,8 @@ const weekDays = [
 ];
 
 
+
+
 export function DailySchedule({
   data,
   updateData,
@@ -35,49 +39,60 @@ export function DailySchedule({
   prevStep,
 }: DailyScheduleProps) {
 
-  const [formData, setFormData] = useState({
-    dailyHours: data.dailyHours || "",
-    preferredStartTime: data.preferredStartTime || "",
-    sleepTime: data.sleepTime || "",
-    weeklyOffDays: data.weeklyOffDays || [],
-    subjectsPerDay:
-      data.subjectsPerDay ||
-      (data.aspirantType === "working professional" ||
-        data.aspirantType === "part-time"
-        ? "one"
-        : ""),
-  });
   const [isLoading, setIsLoading] = useState(false);
 
+  const formik = useFormik({
+    initialValues: {
+      dailyHours: data.dailyHours || "",
+      preferredStartTime: data.preferredStartTime || "",
+      sleepTime: data.sleepTime || "",
+      weeklyOffDays: data.weeklyOffDays || [],
+      subjectsPerDay:
+        data.subjectsPerDay ||
+        (data.aspirantType === "working professional" ||
+          data.aspirantType === "part-time"
+          ? "one"
+          : ""),
+      aspirantType: data.aspirantType
+    },
+    validationSchema: dailyScheduleValidationSchema,
+    onSubmit: async (values) => {
+      await handleRazorpay(values);
+    },
+  });
+
   const handleOffDayChange = (day: string) => {
-    const updated = formData.weeklyOffDays.includes(day)
-      ? formData.weeklyOffDays.filter((d: string) => d !== day)
-      : [...formData.weeklyOffDays, day];
-    setFormData({ ...formData, weeklyOffDays: updated });
+    const updatedOffDays = formik.values.weeklyOffDays.includes(day)
+      ? formik.values.weeklyOffDays.filter((d: string) => d !== day)
+      : [...formik.values.weeklyOffDays, day];
+    formik.setFieldValue('weeklyOffDays', updatedOffDays);
   };
 
-  const handleRazorpay = async () => {
-    // Validation
+  const handleRazorpay = async (values?: typeof formik.values) => {
+    console.log(values);
     localStorage.removeItem("basicInfo");
-    if (
-      !formData.dailyHours ||
-      !formData.preferredStartTime ||
-      !formData.sleepTime
-    ) {
-      alert("Please fill in all required fields.");
-      return;
-    }
+    const formValues = values || formik.values;
 
-    if (data.aspirantType === "full-time" && !formData.subjectsPerDay) {
-      alert("Please select how many subjects you want to study per day.");
+    // Validate form before proceeding
+    const isValid = await formik.validateForm();
+    if (Object.keys(isValid).length > 0) {
+      formik.setTouched({
+        dailyHours: true,
+        preferredStartTime: true,
+        sleepTime: true,
+        subjectsPerDay: true,
+        weeklyOffDays: formValues.weeklyOffDays.length > 0
+      });
       return;
     }
 
     try {
       setIsLoading(true);
       const isLoaded = await loadRazorpay();
+
       if (!isLoaded) {
-        alert("Failed to load Razorpay SDK. Please try again.");
+        setIsLoading(false);
+        console.error("Failed to load Razorpay SDK. Please try again.");
         return;
       }
 
@@ -87,8 +102,9 @@ export function DailySchedule({
         body: JSON.stringify({ email: data.email, name: data.fullName }),
       });
       if (!orderRes.ok) {
-        // throw new Error("Failed to create order");
-        return alert("Failed to create order");
+        setIsLoading(false);
+        console.error("Failed to create order");
+        return;
       }
 
       const orderData = await orderRes.json();
@@ -104,12 +120,12 @@ export function DailySchedule({
           try {
             // Ensure working professionals and part-time aspirants have subjectsPerDay set to "one"
             const finalFormData = {
-              ...formData,
+              ...formValues,
               subjectsPerDay:
                 data.aspirantType === "working professional" ||
                   data.aspirantType === "part-time"
                   ? "one"
-                  : formData.subjectsPerDay,
+                  : formValues.subjectsPerDay,
             };
 
             updateData(finalFormData); // merge last step inputs
@@ -121,6 +137,7 @@ export function DailySchedule({
             });
 
             if (!res.ok) {
+              setIsLoading(false);
               throw new Error("Failed to generate timetable");
             }
 
@@ -155,8 +172,9 @@ export function DailySchedule({
             });
             nextStep(); // move to Review step
           } catch (error) {
+            setIsLoading(false);
             console.error("Error generating timetable:", error);
-            alert("Failed to generate timetable. Please try again.");
+            console.error("Failed to generate timetable. Please try again.");
           } finally {
             setIsLoading(false);
           }
@@ -168,6 +186,11 @@ export function DailySchedule({
         theme: {
           color: "#582F88",
         },
+        modal: {
+          ondismiss: function() {
+            setIsLoading(false);
+          }
+        }
       };
 
       let paymentFailedCalled = false;
@@ -184,7 +207,7 @@ export function DailySchedule({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...data,
-            ...formData,
+            ...formValues,
             razorpayOrderId: response.error?.metadata?.order_id,
             razorpayPaymentId: response.error?.metadata?.payment_id,
             status: "failed",
@@ -207,7 +230,7 @@ export function DailySchedule({
     } catch (error) {
       setIsLoading(false);
       console.error("Error in payment:", error);
-      alert("Failed to initiate payment. Please try again.");
+      console.error("Failed to initiate payment. Please try again.");
     }
   };
 
@@ -222,26 +245,20 @@ export function DailySchedule({
   ]
 
   return (
-    <form>
+    <form onSubmit={formik.handleSubmit}>
       <div className="space-y-6 w-full mx-auto bg-white rounded-md p-6 my-6">
         <h1 className="text-base md:text-lg lg:text-xl font-semibold text-center">Daily Schedule</h1>
         <p className="text-[13px] sm:text-[15px] text-center !mt-1 sm:!mt-2">Let&apos;s create your personalized study Schedule</p>
         <div className="space-y-4">
           <div className="space-y-2">
-            <ul className="arrow-list">
-              {" "}
-              <li>
-                <Label className="text-[13px] sm:text-[15px]">
+                <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5">
+                  <Clock3 className="w-4 h-4"/>
                   How many hours can you dedicate daily for studies?
                 </Label>
-              </li>
-            </ul>
             <div className="space-y-2 pl-5">
               <RadioGroup
-                value={formData.dailyHours}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, dailyHours: value })
-                }
+                value={formik.values.dailyHours}
+                onValueChange={(value) => formik.setFieldValue('dailyHours', value)}
                 className="flex flex-wrap gap-3"
               >
                 {dailyHoursOptions.map((option) => (
@@ -253,7 +270,7 @@ export function DailySchedule({
                   />
                 ))}
                 {dailyHoursOptions.map((option) => {
-                  const isSelected = formData.dailyHours === option.value
+                  const isSelected = formik.values.dailyHours === option.value
                   return (
                     <label
                       key={option.id}
@@ -268,66 +285,63 @@ export function DailySchedule({
                   )
                 })}
               </RadioGroup>
+              {formik.touched.dailyHours && formik.errors.dailyHours && (
+                <p className="text-red-500 text-sm mt-1 ">{formik.errors.dailyHours as string}</p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2 col-span-2 sm:col-span-1">
-              <ul className="arrow-list">
-                {" "}
-                <li>
-                  {" "}
-                  <Label className="text-[13px] sm:text-[15px]" htmlFor="preferredStartTime">
+                  <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5" htmlFor="preferredStartTime">
+                  <SunMedium className="w-5 h-5"/>
                     What time of the day do you wish to start studying?
                   </Label>
-                </li>
-              </ul>
               <div className="pl-5 relative">
                 <TimePicker
                   showSecond={false}
                   format="h:mm a"
                   placeholder="Select Start Time"
                   className="select-none"
-                  onChange={(e) => setFormData({ ...formData, preferredStartTime: moment(e).format('HH:mm') })}
+                  onChange={(e) => formik.setFieldValue('preferredStartTime', moment(e).format('HH:mm'))}
                 />
                 <Clock3 className="absolute right-3 top-2.5 !w-4 !h-4 text-black pointer-events-none" />
               </div>
-
+              {formik.touched.preferredStartTime && formik.errors.preferredStartTime && (
+                <p className="text-red-500 text-sm mt-1 ml-5">{formik.errors.preferredStartTime as string}</p>
+              )}
             </div>
 
             <div className="space-y-2 col-span-2 sm:col-span-1">
-              <ul className="arrow-list">
-                {" "}
-                <li>
-                  {" "}
-                  <Label className="text-[13px] sm:text-[15px]" htmlFor="sleepTime">What time do you go to bed?</Label>
-                </li>
-              </ul>
+                  <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5" htmlFor="sleepTime">
+                      <Moon className="w-4 h-4"/>
+                    What time do you go to bed?
+                    </Label>
               <div className="pl-5 relative">
                 <TimePicker
                   showSecond={false}
                   format="h:mm a"
                   placeholder="Select End Time"
                   className="select-none"
-                  onChange={(e) => setFormData({ ...formData, sleepTime: moment(e).format('HH:mm') })}
+                  onChange={(e) => formik.setFieldValue('sleepTime', moment(e).format('HH:mm'))}
                 />
                 <Clock3 className="absolute right-3 top-2.5 !w-4 !h-4 text-black pointer-events-none" />
               </div>
+              {formik.touched.sleepTime && formik.errors.sleepTime && (
+                <p className="text-red-500 text-sm mt-1 ml-5">{formik.errors.sleepTime as string}</p>
+              )}
             </div>
           </div>
 
           <div className="space-y-2">
-            <ul className="arrow-list">
-              {" "}
-              <li>
-                {" "}
-                <Label className="text-[13px] sm:text-[15px]">Weekly off day preference?</Label>
-              </li>
-            </ul>
+                <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5">
+                    <CalendarMinus2 className="w-4 h-4"/>
+                  Weekly off day preference?
+                  </Label>
             <div className="flex flex-wrap gap-4 ml-5">
               {weekDays.map((day) => {
 
-                const isChecked = formData.weeklyOffDays.includes(day.value);
+                const isChecked = formik.values.weeklyOffDays.includes(day.value);
 
                 return (
                   <label
@@ -344,7 +358,7 @@ export function DailySchedule({
                       type="checkbox"
                       id={`offday-${day.value}`}
                       className="hidden"
-                      checked={formData.weeklyOffDays.includes(day.value)}
+                      checked={formik.values.weeklyOffDays.includes(day.value)}
                       onChange={() => handleOffDayChange(day.value)}
                     />
                     <span>{day.day}</span>
@@ -354,21 +368,19 @@ export function DailySchedule({
               }
               )}
             </div>
+            {formik.touched.weeklyOffDays && formik.errors.weeklyOffDays && (
+              <p className="text-red-500 text-sm mt-1 ml-5">{formik.errors.weeklyOffDays as string}</p>
+            )}
           </div>
           {data.aspirantType === "full-time" && (
             <div className="space-y-2">
-              <ul className="arrow-list">
-                {" "}
-                <li>
-                  {" "}
-                  <Label className="text-[13px] sm:text-[15px]">How many subjects do you want to learn per day?</Label>
-                </li>
-              </ul>
+                  <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5">
+                    <Brain className="w-4 h-4"/>
+                    How many subjects do you want to learn per day?
+                    </Label>
               <RadioGroup
-                value={formData.subjectsPerDay}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, subjectsPerDay: value })
-                }
+                value={formik.values.subjectsPerDay}
+                onValueChange={(value) => formik.setFieldValue('subjectsPerDay', value)}
                 className="flex flex-col space-y-1 ml-5"
               >
                 <div className="flex space-x-2 border rounded-sm p-2 sm:p-3 border-gray-300">
@@ -396,6 +408,9 @@ export function DailySchedule({
                   </span>
                 </div>
               </p>
+              {formik.touched.subjectsPerDay && formik.errors.subjectsPerDay && (
+                <p className="text-red-500 text-sm mt-1 ml-5">{formik.errors.subjectsPerDay as string}</p>
+              )}
             </div>
           )}
         </div>
@@ -405,7 +420,7 @@ export function DailySchedule({
           <ArrowLeft className="w-4 h-4" /> Back
         </Button>
         <span className="text-xs sm:text-sm">Step 4 of 5</span>
-        <Button type="button" className={`gap-1 sm:gap-1.5 w-[230px] ${isLoading && 'opacity-50 cursor-not-allowed'}`} onClick={handleRazorpay} disabled={isLoading}>
+        <Button type="submit" className={`gap-1 sm:gap-1.5 w-[230px] ${isLoading && 'opacity-50 cursor-not-allowed'}`} disabled={isLoading}>
           {
             isLoading ? (
               <div className="h-6 w-6 relative m-[2px] mx-auto">

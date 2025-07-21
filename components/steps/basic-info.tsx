@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
+import * as yup from "yup";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { ArrowRight, Briefcase, Clock, GalleryThumbnails, GraduationCap, Mail, Phone, User } from "lucide-react";
+import { basicInfoValidationSchema } from "../../schema/schema";
 
 interface BasicInfoProps {
   data: any;
   updateData: (data: any) => void;
   nextStep: () => void;
 }
+
+
 
 export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
   const [formData, setFormData] = useState({
@@ -20,12 +24,32 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
     subjectsPerDay: data.subjectsPerDay || "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateData(formData);
-    localStorage.setItem("basicInfo", JSON.stringify(formData));
-    nextStep();
+
+    try {
+      await basicInfoValidationSchema.validate(formData, { abortEarly: false });
+
+      setErrors({});
+
+      updateData(formData);
+      localStorage.setItem("basicInfo", JSON.stringify(formData));
+      nextStep();
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        const newErrors: Record<string, string> = {};
+        error.inner.forEach((err) => {
+          if (err.path) {
+            newErrors[err.path] = err.message;
+          }
+        });
+        setErrors(newErrors);
+      }
+    }
   };
+
   useEffect(() => {
     const storedData = localStorage.getItem("basicInfo");
     if (storedData) {
@@ -47,21 +71,29 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
           <p className="text-[13px] sm:text-[15px] text-center !mt-1 sm:!mt-2">Let&apos;s start with your basic details</p>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2 col-span-2 sm:col-span-1">
-              <Label className="text-[13px] sm:text-[15px] flex items-center gap-1.5" htmlFor="fullName">
+              <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5" htmlFor="fullName">
                 <User className="w-4 h-4" />
                 Full Name
               </Label>
               <Input
                 id="fullName"
                 value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, fullName: e.target.value });
+                  if (errors.fullName) {
+                    setErrors({ ...errors, fullName: "" });
+                  }
+                }}
                 placeholder="Enter your full name"
-                required
+                className={errors.fullName ? "border-red-500" : ""}
               />
+              {errors.fullName && (
+                <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
+              )}
             </div>
 
             <div className="space-y-2 col-span-2 sm:col-span-1">
-              <Label className="text-[13px] sm:text-[15px] flex items-center gap-1.5" htmlFor="email">
+              <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5" htmlFor="email">
                 <Mail className="w-4 h-4" />
                 Email
               </Label>
@@ -69,14 +101,22 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                  if (errors.email) {
+                    setErrors({ ...errors, email: "" });
+                  }
+                }}
                 placeholder="Enter your email"
-                required
+                className={errors.email ? "border-red-500" : ""}
               />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              )}
             </div>
 
             <div className="space-y-2 col-span-2">
-              <Label className="text-[13px] sm:text-[15px] flex items-center gap-1.5" htmlFor="contactNumber">
+              <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5" htmlFor="contactNumber">
                 <Phone className="w-4 h-4" />
                 Contact Number
               </Label>
@@ -84,19 +124,47 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
                 id="contactNumber"
                 type="tel"
                 value={formData.contactNumber}
-                onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData({ ...formData, contactNumber: value });
+                  if (errors.contactNumber) {
+                    setErrors({ ...errors, contactNumber: "" });
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (
+                    [46, 8, 9, 27, 13, 37, 38, 39, 40].indexOf(e.keyCode) !== -1 ||
+                    (e.keyCode === 65 && e.ctrlKey === true) ||
+                    (e.keyCode === 67 && e.ctrlKey === true) ||
+                    (e.keyCode === 86 && e.ctrlKey === true) ||
+                    (e.keyCode === 88 && e.ctrlKey === true)
+                  ) {
+                    return;
+                  }
+                  if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                    e.preventDefault();
+                  }
+                }}
                 placeholder="Enter your contact number"
-                required
+                className={errors.contactNumber ? "border-red-500" : ""}
               />
+              {errors.contactNumber && (
+                <p className="text-red-500 text-xs mt-1">{errors.contactNumber}</p>
+              )}
             </div>
             <div className="space-y-2 col-span-2">
-              <Label className="text-[13px] sm:text-[15px] flex items-center gap-1.5">
+              <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5">
                 <GalleryThumbnails className="w-4 h-4" />
                 Aspirant Type
               </Label>
               <RadioGroup
                 value={formData.aspirantType}
-                onValueChange={(value) => setFormData({ ...formData, aspirantType: value })}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, aspirantType: value });
+                  if (errors.aspirantType) {
+                    setErrors({ ...errors, aspirantType: "" });
+                  }
+                }}
                 className="flex flex-wrap gap-3"
               >
                 {aspirantOptions.map((option) => (
@@ -124,6 +192,9 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
                   )
                 })}
               </RadioGroup>
+              {errors.aspirantType && (
+                <p className="text-red-500 text-xs mt-1">{errors.aspirantType}</p>
+              )}
             </div>
           </div>
         </div>
