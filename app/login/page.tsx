@@ -95,7 +95,7 @@ export default function LoginPage() {
               <label
                 htmlFor="email"
                 className={`absolute left-0 transition-all text-gray-400 ${email || emailFocused
-                    ? "-top-5 text-sm text-blue-500 font-semibold"
+                    ? "-top-5 text-sm text-primary font-semibold"
                     : "top-3 text-base"
                   } pointer-events-none`}
               >

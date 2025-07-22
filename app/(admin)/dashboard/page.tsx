@@ -19,7 +19,7 @@ const navLinks = [{ name: "Home", icon: FaHome, href: "/dashboard" }];
 
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Download } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 interface TimetableData {
   id: string;
   fullName: string;
@@ -241,9 +241,9 @@ export default function AdminDashboard() {
             />
           )}
           <aside
-            className={`fixed top-0  left-0 h-full w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-900 shadow-lg z-40 transform transition-transform duration-200 ease-in-out
+            className={`fixed h-screen w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-900 shadow-lg z-40 transform transition-transform duration-200 ease-in-out
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
-              } lg:translate-x-0 lg:static lg:shadow-none`}
+              } lg:translate-x-0 `}
           >
             <div className="flex items-center justify-between px-6 h-16 border-b border-gray-100 dark:border-gray-900">
               <span className="text-xl font-bold text-gradient bg-primary bg-clip-text text-transparent dark:text-gray-100">
@@ -258,16 +258,16 @@ export default function AdminDashboard() {
                   onClick={toggleDarkMode}
                 >
                   {darkMode ? (
-                    <FaSun className="h-5 w-5" />
+                    <FaSun className="h-4 w-4 sm:w-5 sm:h-5" />
                   ) : (
-                    <FaMoon className="h-5 w-5" />
+                    <FaMoon className="h-4 w-4 sm:w-5 sm:h-5" />
                   )}
                 </button>
                 <button
                   className="lg:hidden text-gray-700 focus:outline-none"
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <FaTimes className="h-6 w-6" />
+                  <FaTimes className="h-5 w-5" />
                 </button>
               </div>
             </div>
@@ -280,17 +280,17 @@ export default function AdminDashboard() {
                     href={link.href}
                     onClick={() => setActiveNavItem(link.name)}
                     className={`flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition group ${isActive
-                        ? "bg-primary/20 dark:bg-blue-500/20 text-primary dark:text-blue-400 border-l-4 border-primary dark:border-blue-400"
-                        : "text-gray-700 dark:text-gray-100 hover:bg-primary/15 dark:hover:bg-gray-800"
+                      ? "bg-primary/20 dark:bg-blue-500/20 text-primary dark:text-blue-400 border-l-4 border-primary dark:border-blue-400"
+                      : "text-gray-700 dark:text-gray-100 hover:bg-primary/15 dark:hover:bg-gray-800"
                       }`}
                   >
                     <link.icon className={`h-5 w-5 transition ${isActive
-                        ? "text-primary dark:text-blue-400"
-                        : "text-primary dark:text-blue-400 group-hover:text-primary dark:group-hover:text-blue-300"
+                      ? "text-primary dark:text-blue-400"
+                      : "text-primary dark:text-blue-400 group-hover:text-primary dark:group-hover:text-blue-300"
                       }`} />
                     <span className={`transition ${isActive
-                        ? "text-primary dark:text-blue-400 font-semibold"
-                        : "group-hover:text-primary dark:group-hover:text-blue-300"
+                      ? "text-primary dark:text-blue-400 font-semibold"
+                      : "group-hover:text-primary dark:group-hover:text-blue-300"
                       }`}>
                       {link.name}
                     </span>
@@ -395,15 +395,15 @@ export default function AdminDashboard() {
         </div>
 
         <div className="flex-1 flex flex-col min-h-screen">
-          <header className="w-full h-16 flex items-center px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm z-10">
-            <div className="flex items-center w-full">
+          <header className="lg:w-[calc(100%-256px)] h-16 sticky top-0 left-64 flex items-center px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm z-10">
+            <div className="flex gap-4 items-center w-full">
               <button
                 className="lg:hidden text-gray-700 focus:outline-none"
                 onClick={() => setSidebarOpen(true)}
               >
-                <FaBars className="h-6 w-6" />
+                <FaBars className="h-4 w-4" />
               </button>
-              <h1 className="text-2xl font-bold flex-1 text-start dark:text-white">
+              <h1 className="text-xl lg:text-2xl font-semibold lg:font-bold flex-1 text-start dark:text-white">
                 Dashboard
               </h1>
               <div className="relative">
@@ -441,15 +441,15 @@ export default function AdminDashboard() {
             </div>
           </header>
 
-          <main className="flex-1 p-2 bg-gray-100 dark:bg-gray-800">
+          <main className="flex-1 bg-gray-100 dark:bg-gray-800 p-6 lg:ml-[256px]">
             {/* Breadcrumb */}
             <div className="mb-6">
               <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <Link href="/" className="hover:text-primary dark:hover:text-white transition-colors">
                   <FaHome className="h-4 w-4" />
                 </Link>
                 <FaChevronRight className="h-3 w-3" />
-                <Link href="/dashboard" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <Link href="/dashboard" className="hover:text-primary dark:hover:text-white transition-colors">
                   Dashboard
                 </Link>
                 <FaChevronRight className="h-3 w-3" />
@@ -463,9 +463,9 @@ export default function AdminDashboard() {
 
               {/* Search Bar and Filters */}
               <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-4 border border-gray-100 dark:border-gray-800">
-                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="flex flex-wrap gap-2 lg:gap-4 items-start sm:items-center">
                   {/* Search Input */}
-                  <div className="relative flex-1 max-w-md">
+                  <div className="relative flex-1 md:max-w-md w-full sm:w-fit">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaSearch className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                     </div>
@@ -474,7 +474,7 @@ export default function AdminDashboard() {
                       value={searchQuery}
                       onChange={handleSearchChange}
                       placeholder="Search by name, email, phone, or target year..."
-                      className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-colors"
                     />
                     {searchQuery && (
                       <button
@@ -487,36 +487,48 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Payment Status Filter */}
-                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                      Payment Status:
-                    </label>
-                    <select
-                      value={paymentStatusFilter}
-                      onChange={handlePaymentStatusChange}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors min-w-[120px]"
-                    >
-                      <option value="">All Status</option>
-                      <option value="success">Success</option>
-                      <option value="failed">Failed</option>
-                    </select>
+                  <div className="relative inline-block w-full sm:w-fit">
+                    <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                        Payment Status:
+                      </label>
+                      <select
+                        value={paymentStatusFilter}
+                        onChange={handlePaymentStatusChange}
+                        className="appearance-none w-full sm:w-fit px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-colors min-w-[120px]"
+                      >
+                        <option value="">All Status</option>
+                        <option value="success">Success</option>
+                        <option value="failed">Failed</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 top-7 sm:top-0 right-2 flex items-center">
+                        <ChevronDown className="text-foreground w-4 h-4" strokeWidth={3} />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Download Status Filter */}
-                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                      Download Status:
-                    </label>
-                    <select
-                      value={downloadStatusFilter}
-                      onChange={handleDownloadStatusChange}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors min-w-[120px]"
-                    >
-                      <option value="">All Status</option>
-                      <option value="downloaded">Success</option>
-                      <option value="downloaded failed">Failed</option>
-                    </select>
+
+                  <div className="relative inline-block w-full sm:w-fit">
+                    <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                        Download Status:
+                      </label>
+                      <select
+                        value={downloadStatusFilter}
+                        onChange={handleDownloadStatusChange}
+                        className="appearance-none w-full sm:w-fit px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-colors min-w-[120px]"
+                      >
+                        <option value="">All Status</option>
+                        <option value="downloaded">Success</option>
+                        <option value="downloaded failed">Failed</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 top-7 sm:top-0 right-2 flex items-center">
+                        <ChevronDown className="text-foreground w-4 h-4" strokeWidth={3} />
+                      </div>
+                    </div>
                   </div>
+
 
                   {/* Clear All Filters Button */}
                   {(searchQuery || paymentStatusFilter || downloadStatusFilter) && (
@@ -634,32 +646,32 @@ export default function AdminDashboard() {
                             <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 whitespace-nowrap dark:text-[#64E9F8]">
                               {globalIndex + 1}
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#C9F7F5]">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#C9F7F5]">
                               {item.fullName}
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#34D399]">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#34D399]">
                               {item.email}
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FFD700]">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FFD700]">
                               {item.contactNumber}
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FF99CC]">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FF99CC]">
                               {item.targetYear}
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FFC107]">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FFC107]">
                               299
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#FFC107]">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FFC107]">
                               {item.razorpayPaymentId}
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#A7FFEB]">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#A7FFEB]">
                               {item.razorpayOrderId}
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-center">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm text-center">
                               <span
                                 className={`px-2 py-1 rounded-full ${item.razorpayPaymentStatus === "success"
-                                    ? "bg-green-100 dark:bg-green-200 text-green-500"
-                                    : "bg-red-100 dark:bg-red-200 text-red-500"
+                                  ? "bg-green-100 dark:bg-green-200 text-green-500"
+                                  : "bg-red-100 dark:bg-red-200 text-red-500"
                                   }`}
                               >
                                 {" "}
@@ -668,11 +680,11 @@ export default function AdminDashboard() {
                                   : "Success"}
                               </span>
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-center">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm text-center">
                               <span
                                 className={`px-2 py-1 rounded-full ${item.downloadStatus === "downloaded failed"
-                                    ? "bg-red-100 dark:bg-red-200 text-red-500"
-                                    : "bg-green-100 dark:bg-green-200 text-green-500"
+                                  ? "bg-red-100 dark:bg-red-200 text-red-500"
+                                  : "bg-green-100 dark:bg-green-200 text-green-500"
                                   }`}
                               >
                                 {" "}
@@ -681,7 +693,7 @@ export default function AdminDashboard() {
                                   : "Success"}
                               </span>
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#99E1D9]">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#99E1D9]">
                               {new Intl.DateTimeFormat("en-IN", {
                                 year: "numeric",
                                 month: "long",
@@ -691,7 +703,7 @@ export default function AdminDashboard() {
                                 second: "2-digit",
                               }).format(createdAt)}
                             </td>
-                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap dark:text-[#6EE7BC] sticky -right-6 bg-white dark:bg-gray-900 z-10">
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#6EE7BC] sticky -right-6 bg-white dark:bg-gray-900 z-10">
                               <button className="flex items-center gap-1 text-primary dark:text-blue-400 hover:underline">
                                 <Download className="h-4 w-4" />
                                 Download
@@ -712,7 +724,7 @@ export default function AdminDashboard() {
                     <select
                       value={itemsPerPage}
                       onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                      className="px-3 py-1 text-sm border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="px-3 py-1 text-sm border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     >
                       <option value={15}>15</option>
                       <option value={25}>25</option>
@@ -751,8 +763,8 @@ export default function AdminDashboard() {
                             key={pageNum}
                             onClick={() => goToPage(pageNum)}
                             className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${currentPage === pageNum
-                                ? 'z-10 bg-blue-50 border border-blue-500 text-blue-600 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700'
-                                : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+                              ? 'z-10 bg-primary/15 border !font-bold border-primary text-primary dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-400'
+                              : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
                               }`}
                           >
                             {pageNum}

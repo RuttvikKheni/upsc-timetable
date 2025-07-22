@@ -10,7 +10,7 @@ export default function LogoHeader() {
           </div>
           <h1 className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-[22px] text-nowrap font-semibold text-center">Proxy Gyan Personalized Timetable</h1>
         </div>
-        <p className="text-xs sm:text-sm md:text-[15px] lg:text-base text-accent font-semibold text-center">{"Let's plot your pathway to LBSNAA!"}</p>
+        <p className="text-xs sm:text-sm md:text-[15px] lg:text-base text-accent font-semibold text-center">{"UPSC Preparation Planner"}</p>
       </div>
     </div>
   );

@@ -67,7 +67,7 @@ export function MultiStepForm() {
   const CurrentStepComponent = steps[currentStep].component;
   return (
     <div className="mt-[70px] mb-[90px] w-full">
-      <div className="max-w-full sm:max-w-4xl container mx-auto px-2 sm:px-4 pt-8">
+      <div className="max-w-full sm:max-w-4xl container mx-auto px-4 sm:px-6 pt-8">
         <StepProgress steps={stepTitles} currentStep={currentStep} />
         <AnimatePresence mode="wait">
           <motion.div

@@ -20,13 +20,15 @@ import {
   RefreshCw,
   SquareCode,
 } from "lucide-react";
-import { useDownload } from "../../lib/hooks/useDownload";
+
 import { useToast } from "../ui/toast";
 import moment from "moment";
+import { generateAndDownloadPDF } from "../../lib/utils/pdfGenerator";
 
 export function Review({ data, onRegenerate }: any) {
   const [activeWeek, setActiveWeek] = useState("week-1");
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const { showToast } = useToast();
 
   const weekRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -41,15 +43,7 @@ export function Review({ data, onRegenerate }: any) {
     }
   };
 
-  const { downloadFile, isDownloading } = useDownload({
-    onSuccess: () => {
-      showToast("PDF downloaded successfully!", "success");
-    },
-    onError: (error) => {
-      console.error("Download failed:", error);
-      showToast("Failed to download PDF. Please try again.", "error");
-    },
-  });
+  // Removed useDownload hook since we're using frontend PDF generation
 
   if (!data.generatedTimetable?.length) {
     return (
@@ -105,24 +99,16 @@ export function Review({ data, onRegenerate }: any) {
       return;
     }
 
-    // Show progress toast
+    setIsDownloading(true);
     showToast("Starting PDF generation...", "info", 2000);
 
     try {
-      const filename = `upsc-timetable-${new Date().toISOString().split("T")[0]
-        }.pdf`;
-
-      await downloadFile("/api/download-pdf", filename, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          timetableData: data.generatedTimetable,
-        }),
-      });
+      console.log("Generating PDF...", data.generatedTimetable);
       
-      // If we reach here, download was successful
+      // Generate and download PDF using frontend library
+      await generateAndDownloadPDF(data.generatedTimetable);
+      
+      // Update download status in backend
       const res = await fetch("/api/timetable/downloadhandle", {
         method: "PUT",
         headers: {
@@ -132,16 +118,23 @@ export function Review({ data, onRegenerate }: any) {
           timeTableId: localStorage.getItem("timetableId"),
         }),
       });
+      
       if (!res.ok) {
         throw new Error("Failed to update download status");
       }
+      
       if (res.ok) {
         localStorage.removeItem("timetableId");
       }
+      
+      // Show success message
+      showToast("PDF downloaded successfully!", "success");
+      
     } catch (error) {
-      // Error handling is done in the hook
       console.error("Download failed:", error);
       showToast("Failed to download PDF. Please try again.", "error");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
