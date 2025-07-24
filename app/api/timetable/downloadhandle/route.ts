@@ -5,12 +5,12 @@ export async function PUT(req: NextRequest) {
     try {
         connectDB();
         const body = await req.json();
-        const { timeTableId } = body;
+        const { timeTableId ,status} = body;
         const timetable = await TimeTable.findById({ _id: timeTableId });
         if (!timetable) {
             return NextResponse.json({ error: "Timetable not found" }, { status: 404 });
         }
-        timetable.downloadStatus = "downloaded";
+        timetable.downloadStatus = status;
         await timetable.save();
         return NextResponse.json({ message: "Timetable updated successfully" }, { status: 200 });
     } catch (error) {

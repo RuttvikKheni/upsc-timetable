@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '15');
     const search = searchParams.get('search') || '';
+    const razorpayPaymentId = searchParams.get('razorpayPaymentId') || '';
+    const razorpayOrderId = searchParams.get('razorpayOrderId') || '';
     const paymentStatus = searchParams.get('paymentStatus') || '';
     const downloadStatus = searchParams.get('downloadStatus') || '';
     const skip = (page - 1) * limit;
@@ -38,6 +40,16 @@ export async function GET(request: NextRequest) {
           { targetYear: { $regex: search, $options: 'i' } }
         ]
       });
+    }
+    
+    // Add razorpay payment ID search
+    if (razorpayPaymentId) {
+      conditions.push({ razorpayPaymentId: { $regex: razorpayPaymentId, $options: 'i' } });
+    }
+    
+    // Add razorpay order ID search
+    if (razorpayOrderId) {
+      conditions.push({ razorpayOrderId: { $regex: razorpayOrderId, $options: 'i' } });
     }
     
     // Add payment status filter

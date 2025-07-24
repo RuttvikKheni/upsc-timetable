@@ -1,115 +1,271 @@
+/* eslint-disable jsx-a11y/alt-text */
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 
-// Modern, attractive PDF design with 2 days per page
+const MAX_SLOTS_PER_PAGE = 3;
+
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#ffffff',
-    padding: 25,
     fontSize: 12,
     fontFamily: 'Helvetica',
   },
-  header: {
+  box: {
+    width: 100,
+    height: 3,
+    backgroundColor: '#573089',
+    marginBottom: 35,
+  },
+  center: {
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
     textAlign: 'center',
-    marginBottom: 30,
-    backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    padding: 25,
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    border: '2px'
   },
-  headerTitle: {
-    fontSize: 32,
-    color: '#ffffff',
-    marginBottom: 8,
+  title: {
+    fontSize: 25,
     fontWeight: 'bold',
-    letterSpacing: 1,
+    margin: 'auto',
+    paddingBottom: 10,
+    paddingTop: 8,
   },
-  headerSubtitle: {
+  subtitle: {
     fontSize: 14,
-    color: '#e2e8f0',
-    fontWeight: 'normal',
+    fontWeight: 'bold',
+    color: '#6b7280',
+    margin: 'auto',
   },
-  pageInfo: {
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 30,
+    marginBottom: 10,
+  },
+  dateTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    justifyContent: 'center',
+    maxWidth: '450px',
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 50,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    marginHorizontal: 8,
+  },
+  labels: {
+    fontSize: 12,
+    color: '#000',
+    marginRight: 8,
+    marginLeft: 8,
+  },
+  badge: {
+    borderRadius: 20,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  total: {
+    borderWidth: 1,
+    borderColor: '#3b82f6',
+    marginLeft: '40px',
+  },
+  icon: {
+    width: 12,
+    height: 12
+  },
+  start: {
+    borderWidth: 1,
+    borderColor: '#10b981',
+  },
+  end: {
+    borderWidth: 1,
+    borderColor: '#fbbf24',
+  },
+  quoteBox: {
+    backgroundColor: '#E5E9F8',
+    padding: 24,
+    borderRadius: 8,
+    marginTop: 30,
+    marginBottom: 30,
+  },
+  quoteText: {
+    fontSize: 14,
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  caption: {
+    fontSize: 12,
+    color: '#6b7280',
+    margin: 'auto'
+  },
+  coma: {
+    width: 14,
+    height: 12
+  },
+  features: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  featureBox: {
+    alignItems: 'center',
+    width: '33%',
+  },
+  featureTitle: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  featureDesc: {
+    fontSize: 11,
+    color: '#6b7280',
+  },
+  linkfooter: {
+    backgroundColor: '#F9FAFB',
+    padding: 24,
+    marginTop: 24,
+    borderRadius: 8,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    fontSize: 12,
     textAlign: 'center',
-    marginBottom: 25,
-    padding: 15,
-    backgroundColor: '#f8fafc',
-    borderRadius: 10,
-    borderLeftWidth: 4,
-    borderLeftColor: '#8b5cf6',
+    fontWeight: 'bold',
+    color: '#6b7280',
+    marginHorizontal: 'auto',
   },
-  pageInfoText: {
-    fontSize: 16,
-    color: '#6366f1',
+  footersec: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 6,
+    color: '#6b7280',
+    marginHorizontal: 'auto',
+  },
+  footerlink: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 6,
+    color: '#573089',
+    textDecoration: 'underline',
+    marginHorizontal: 'auto',
+  },
+  headerWrapper: {
+    position: 'relative'
+  },
+  bar: {
+    width: '100%',
+    height: '65px',
+  },
+  footerbar: {
+    width: '100%',
+    height: '65px',
+    transform: 'rotate(180deg)',
+  },
+  headerText: {
+    position: 'absolute',
+    top: 13,
+    left: 25,
+    color: '#ffffff',
+    fontSize: 18,
     fontWeight: 'bold',
   },
-  daysContainer: {
-    flexDirection: 'column',
-    gap: 25,
+  footerText: {
+    position: 'absolute',
+    top: 30,
+    right: 25,
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  dayCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+  logoCover: {
+    borderRadius: '8px',
+    backgroundColor: '#573089',
+    overflow: 'hidden',
+    borderWidth: 4,
+    borderColor: '#573089'
+  },
+  logo: {
+    width: 48,
+    height: 48,
+  },
+  imgSection: {
+    width: 32,
+    height: 32,
+  },
+  badges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 20,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  badgesText: {
+    fontSize: 8,
+    color: '#FFF',
+    fontWeight: 'bold',
+  },
+  contentRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  leftColumn: {
+    padding: 12,
+    backgroundColor: '#F6F5FA',
+    borderRadius: '10px',
+    flex: 0.7,
+    flexDirection: 'column',
+    gap: 15,
+  },
+  rightColumn: {
+    flex: 0.3,
+    flexDirection: 'column',
+    gap: 15,
+    paddingRight: 10
+  },
+  dayTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    marginTop: 5,
+    paddingLeft: 25,
+    color: '#000',
+  },
+  dateText: {
+    fontSize: 14,
+    marginBottom: 15,
+    paddingLeft: 25,
+    color: '#555',
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 10,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-  },
-  dayHeader: {
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 15,
-    fontSize: 18,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    borderRadius: 10,
-    textAlign: 'center',
-  },
-  publicHoliday: {
-    fontWeight: 'bold',
-    color: '#dc2626',
-    marginBottom: 12,
-    fontSize: 14,
-    backgroundColor: '#fef2f2',
-    padding: 6,
-    borderRadius: 4,
-    textAlign: 'center',
-  },
-  activity: {
-    marginBottom: 16,
-    padding: 16,
-    backgroundColor: '#fafbff',
-    borderRadius: 12,
-    borderLeftWidth: 5,
-    borderLeftColor: '#8b5cf6',
-    borderWidth: 1,
-    borderColor: '#e0e7ff',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
-  activityHeader: {
+  cardHead: {
+    display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 6,
-    flexWrap: 'wrap',
   },
   subject: {
-    fontWeight: 'bold',
-    color: '#1e40af',
     fontSize: 14,
-    flex: 1,
+    fontWeight: 'bold',
   },
   mainSubject: {
     fontSize: 11,
@@ -121,52 +277,52 @@ const styles = StyleSheet.create({
     color: '#475569',
     textAlign: 'center',
   },
-  mainSubjectOptional: {
-    backgroundColor: '#ddd6fe',
-    color: '#5b21b6',
-  },
-  mainSubjectCurrentAffairs: {
-    backgroundColor: '#bbf7d0',
-    color: '#15803d',
-  },
-  mainSubjectCsat: {
-    backgroundColor: '#fed7aa',
-    color: '#c2410c',
-  },
-  mainSubjectRevision: {
-    backgroundColor: '#e9d5ff',
-    color: '#7c2d12',
-  },
-  activityDetails: {
-    fontSize: 11,
-    color: '#475569',
-    marginTop: 8,
-  },
-  detailRow: {
-    marginBottom: 5,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  detailLabel: {
-    fontWeight: 'bold',
-    color: '#64748b',
-    width: 70,
+  badgeOptional: { backgroundColor: '#ddd6fe', color: '#5b21b6' },
+  badgeCurrent: { backgroundColor: '#bbf7d0', color: '#15803d' },
+  badgeDefault: { backgroundColor: '#f1f5f9', color: '#475569' },
+  label: {
     fontSize: 10,
+    color: '#64748b',
+    marginTop: 4,
   },
-  detailContent: {
-    flex: 1,
+  value: {
+    textAlign: 'justify',
     fontSize: 11,
-    color: '#334155',
-    lineHeight: 1.4,
+    marginBottom: 4,
+    marginTop: 3,
   },
-  hours: {
+  widget: {
+    backgroundColor: '#EFECF3',
+    borderRadius: 12,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  widgetTitle: {
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#059669',
-    backgroundColor: '#f0fdf4',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    marginBottom: 8,
   },
+  widgetText: {
+    fontSize: 11,
+    color: '#64748b',
+    lineHeight: 1.4,
+    textAlign: 'justify'
+  },
+  footerWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    height: 60,
+    overflow: 'hidden',
+  },
+  rightImg: {
+    width: 30,
+    height: 34,
+    marginBottom: 8,
+    objectFit: 'cover',
+  }
 });
 
 interface TimetablePDFProps {
@@ -206,120 +362,177 @@ const TimetablePDF: React.FC<TimetablePDFProps> = ({ timetableData }) => {
     return dateA.getTime() - dateB.getTime();
   });
 
+  const splitActivities = (activities: any) => {
+    if (!Array.isArray(activities)) return [];
+    return activities.reduce((acc: any, curr: any, index: number) => {
+      if (index % MAX_SLOTS_PER_PAGE === 0) {
+        acc.push(activities.slice(index, index + MAX_SLOTS_PER_PAGE));
+      }
+      return acc;
+    }, []);
+  };
+
   const days = uniqueDates.map((date: any, index: number) => ({
     date,
     dayCount: index + 1,
     activities: entriesByDate[date],
-  }));
+  }))
+    // Per Day Per Page Slot Split
+    .reduce((acc: any, curr: any) => {
+      const newActivities = splitActivities(curr.activities);
 
-  const weeks = days.reduce((acc: any, day: any) => {
-    const week = Math.floor((day.dayCount - 1) / 7) + 1;
-    if (!acc[week]) acc[week] = [];
-    acc[week].push(day);
-    return acc;
-  }, {});
+      newActivities.forEach((chunk: any) => {
+        acc.push({
+          date: curr.day,
+          dayCount: curr.dayCount,
+          activities: chunk
+        });
+      });
 
-  const getMainSubjectStyle = (mainSubject: string) => {
-    const subject = (mainSubject || '').toLowerCase();
-    if (subject.includes('optional')) return styles.mainSubjectOptional;
-    if (subject.includes('current affairs')) return styles.mainSubjectCurrentAffairs;
-    if (subject.includes('csat')) return styles.mainSubjectCsat;
-    if (subject.includes('revision')) return styles.mainSubjectRevision;
-    return styles.mainSubject;
-  };
+      return acc;
+    }, []);
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (!text) return 'N/A';
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-  };
-
-  // Split days into chunks of 2 for modern layout
   const daysChunks = [];
   for (let i = 0; i < days.length; i += 2) {
     daysChunks.push(days.slice(i, i + 2));
   }
 
+  const getBadgeStyle = (main: string) => {
+    if ((main || '').toLowerCase().includes('optional')) return [styles.badge, styles.badgeOptional];
+    if ((main || '').toLowerCase().includes('current')) return [styles.badge, styles.badgeCurrent];
+    return [styles.badge, styles.badgeDefault];
+  };
+
   return (
     <Document>
-      {daysChunks.map((chunk, chunkIndex) => (
-        <Page key={chunkIndex} size="A4" style={styles.page}>
-          {/* Header - only on first page */}
-          {chunkIndex === 0 && (
-            <View style={styles.header}>
-              <Text style={styles.headerTitle}>UPSC Preparation Timetable</Text>
-              <Text style={styles.headerSubtitle}>
-                Total Days: {uniqueDates.length} | Start Date: {uniqueDates[0] || 'N/A'} | Generated on: {new Date().toLocaleDateString()}
-              </Text>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.center}>
+          <View style={styles.logoCover}>
+            <Image src="/logo.jpg" style={styles.logo} />
+          </View>
+          <View>
+            <Text style={styles.title}>Proxy Gyan</Text>
+            <Text style={styles.subtitle}>UPSC Preparation Platform</Text>
+          </View>
+          <Text style={styles.sectionTitle}>Study Timetable</Text>
+          <View style={styles.box} />
+          <View style={styles.dateTags}>
+            <View style={[styles.tag, styles.total]}>
+              <Image src="/calendar.png" style={styles.icon} />
+              <Text style={styles.labels}> Total Days</Text>
+              <View style={[styles.badges, { backgroundColor: '#2863EB' }]}>
+                <Text style={styles.badgesText}>365</Text>
+              </View>
             </View>
-          )}
-
-          {/* Page Info */}
-          <View style={styles.pageInfo}>
-            <Text style={styles.pageInfoText}>
-              Days {chunk[0]?.dayCount}{chunk[1] ? ` - ${chunk[1].dayCount}` : ''} | Page {chunkIndex + 1} of {daysChunks.length}
+            <View style={[styles.tag, styles.start]}>
+              <Image src="/play.png" style={styles.icon} />
+              <Text style={styles.labels}> Start Date</Text>
+              <View style={[styles.badges, { backgroundColor: '#3DB980' }]}>
+                <Text style={styles.badgesText}>Jan 1, 2024</Text>
+              </View>
+            </View>
+            <View style={[styles.tag, styles.end]}>
+              <Image src="/flag.png" style={styles.icon} />
+              <Text style={styles.labels}> End Date</Text>
+              <View style={[styles.badges, { backgroundColor: '#F59E0B' }]}>
+                <Text style={styles.badgesText}>Dec 31, 2024</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.quoteBox}>
+            <Image src="/coma.png" style={[styles.coma, styles.caption]} />
+            <Text style={styles.quoteText}>
+              "Success is the sum of small efforts repeated day in and day out."
             </Text>
+            <Text style={styles.caption}>Your journey to UPSC success starts here</Text>
           </View>
 
-          {/* Days Container */}
-          <View style={styles.daysContainer}>
-            {chunk.map((day: any) => (
-              <View key={day.dayCount} style={styles.dayCard}>
-                <Text style={styles.dayHeader}>Day {day.dayCount} - {day.date}</Text>
-                
-                {/* Public Holiday */}
-                {day.activities.length && day.activities[0]?.isHoliday && (
-                  <Text style={styles.publicHoliday}>{day.activities[0].isHoliday}</Text>
-                )}
+          <View style={styles.features}>
+            <View style={styles.featureBox}>
+              <Image src="/time.png" style={styles.imgSection} />
+              <Text style={styles.featureTitle}>Time Management</Text>
+              <Text style={styles.featureDesc}>Optimized schedule</Text>
+            </View>
+            <View style={styles.featureBox}>
+              <Image src="/goal.png" style={styles.imgSection} />
+              <Text style={styles.featureTitle}>Goal Oriented</Text>
+              <Text style={styles.featureDesc}>Strategic approach</Text>
+            </View>
+            <View style={styles.featureBox}>
+              <Image src="/progress.png" style={styles.imgSection} />
+              <Text style={styles.featureTitle}>Progress Track</Text>
+              <Text style={styles.featureDesc}>Monitor growth</Text>
+            </View>
+          </View>
 
-                {/* Activities */}
-                {day.activities.map((activity: any, actIndex: number) => (
-                  <View key={actIndex} style={styles.activity}>
-                    {/* Activity Header */}
-                    <View style={styles.activityHeader}>
-                      <Text style={styles.subject}>
-                        {truncateText(activity.SUBJECT, 45)}
-                      </Text>
-                      <Text style={[styles.mainSubject, getMainSubjectStyle(activity['MAIN SUBJECT'])]}>
-                        {activity['MAIN SUBJECT'] || 'N/A'}
-                      </Text>
-                    </View>
-
-                    {/* Activity Details */}
-                    <View style={styles.activityDetails}>
-                      <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Topic:</Text>
-                        <Text style={styles.detailContent}>
-                          {truncateText(activity.TOPIC, 80)}
-                        </Text>
-                      </View>
-
-                      <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Subtopic:</Text>
-                        <Text style={styles.detailContent}>
-                          {truncateText(activity.SUBTOPICS, 80)}
-                        </Text>
-                      </View>
-
-                      {activity.HOURS && (
-                        <View style={styles.detailRow}>
-                          <Text style={styles.detailLabel}>Hours:</Text>
-                          <Text style={[styles.detailContent, styles.hours]}>
-                            {activity.HOURS} hours
-                          </Text>
-                        </View>
-                      )}
-
-                      <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Sources:</Text>
-                        <Text style={styles.detailContent}>
-                          {truncateText(activity.RECOMMENDED_SOURCES, 120)}
-                        </Text>
-                      </View>
-                    </View>
+          <View style={styles.linkfooter}>
+            <Text style={styles.footer}>
+              <Image src="/clock.png" style={{ width: '12px', height: '12px', marginTop: '10px' }} />  This timetable is designed to maximize your preparation efficiency{'\n'}
+            </Text>
+            <Text style={styles.footersec}>
+              Generated on: January 2024 | Version 1.0
+            </Text>
+            <Text style={styles.footerlink}>
+              https::/youtube.com
+            </Text>
+          </View>
+        </View>
+      </Page>
+      {days.map((day: any, index: number) => (
+        <Page key={day.dayCount} size="A4" style={styles.page}>
+          <View style={styles.headerWrapper}>
+            <Image src="/bar.png" style={styles.bar} />
+            <Text style={styles.headerText}>Daily Time Table</Text>
+          </View>
+          <Text style={styles.dayTitle}>Day {day.dayCount}</Text>
+          <Text style={styles.dateText}>{day.date}</Text>
+          <View style={styles.contentRow}>
+            <View style={styles.leftColumn}>
+              {day.activities.map((activity: any, idx: number) => (
+                <View key={idx} style={styles.card}>
+                  <View style={styles.cardHead}>
+                    <Text style={styles.subject}>{activity.SUBJECT || 'Untitled'}</Text>
+                    <Text style={getBadgeStyle(activity['MAIN SUBJECT'])}>
+                      {activity['MAIN SUBJECT'] || 'General'}
+                    </Text>
                   </View>
-                ))}
+                  {activity.HOURS &&
+                    <>
+                      <Text style={styles.label}>Hours</Text>
+                      <Text style={styles.value}>{activity.HOURS} hours</Text>
+                    </>
+                  }
+                  <Text style={styles.label}>Topic</Text>
+                  <Text style={styles.value}>{activity.TOPIC || 'N/A'}</Text>
+                  <Text style={styles.label}>Subtopics</Text>
+                  <Text style={styles.value}>{activity.SUBTOPICS || 'N/A'}</Text>
+                  <Text style={styles.label}>Sources</Text>
+                  <Text style={styles.value}>{activity.RECOMMENDED_SOURCES || 'N/A'}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.rightColumn}>
+              <View style={styles.widget}>
+                <Image src="/health.png" style={styles.rightImg} />
+                <Text style={styles.widgetTitle}>Health Tips</Text>
+                <Text style={styles.widgetText}>Drink enough water, eat fresh fruits, and get 7-8 hours of sleep daily.</Text>
               </View>
-            ))}
+              <View style={styles.widget}>
+                <Image src="/quote.png" style={styles.rightImg} />
+                <Text style={styles.widgetTitle}>Motivational Quote</Text>
+                <Text style={styles.widgetText}>Great achievements are possible when you stay consistent, focused, and never give up.</Text>
+              </View>
+              <View style={styles.widget}>
+                <Image src="/bulb.png" style={styles.rightImg} />
+                <Text style={styles.widgetTitle}>AIR Tips</Text>
+                <Text style={styles.widgetText}>Practice previous year questions regularly and revise weak topics every weekend without fail.</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.footerWrapper}>
+            <Image src="/bar.png" style={styles.footerbar} />
+            <Text style={styles.footerText}>{(index + 1) <= 9 && "0"}{index + 1}</Text>
           </View>
         </Page>
       ))}

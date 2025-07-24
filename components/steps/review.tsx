@@ -25,10 +25,11 @@ import { useToast } from "../ui/toast";
 import moment from "moment";
 import { generateAndDownloadPDF } from "../../lib/utils/pdfGenerator";
 
-export function Review({ data, onRegenerate }: any) {
+export function Review({ data, onRegenerate, onClearData }: any) {
   const [activeWeek, setActiveWeek] = useState("week-1");
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isPdfDownloaded, setIsPdfDownloaded] = useState(localStorage.getItem("isPdfDownloaded") === "true"?true:false);
   const { showToast } = useToast();
 
   const weekRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -65,7 +66,6 @@ export function Review({ data, onRegenerate }: any) {
     },
     {}
   );
-
   const getTime = (date: number | string | Date) => new Date(date).getTime();
 
   const uniqueDates = Object.keys(entriesByDate)?.sort(
@@ -103,11 +103,10 @@ export function Review({ data, onRegenerate }: any) {
     showToast("Starting PDF generation...", "info", 2000);
 
     try {
-      console.log("Generating PDF...", data.generatedTimetable);
       
       // Generate and download PDF using frontend library
       await generateAndDownloadPDF(data.generatedTimetable);
-      
+      setIsDownloading(true);
       // Update download status in backend
       const res = await fetch("/api/timetable/downloadhandle", {
         method: "PUT",
@@ -116,7 +115,7 @@ export function Review({ data, onRegenerate }: any) {
         },
         body: JSON.stringify({
           timeTableId: localStorage.getItem("timetableId"),
-        }),
+        status: "downloaded"}),
       });
       
       if (!res.ok) {
@@ -130,9 +129,25 @@ export function Review({ data, onRegenerate }: any) {
       // Show success message
       showToast("PDF downloaded successfully!", "success");
       
+      // Set PDF downloaded state to show Generate New button
+      setIsPdfDownloaded(true);
+      localStorage.setItem("isPdfDownloaded", "true");
+      
     } catch (error) {
       console.error("Download failed:", error);
       showToast("Failed to download PDF. Please try again.", "error");
+      setIsDownloading(false);
+      setIsPdfDownloaded(false);
+      const res = await fetch("/api/timetable/downloadhandle", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          timeTableId: localStorage.getItem("timetableId"),
+        status: "Failed"}),
+      });
+
     } finally {
       setIsDownloading(false);
     }
@@ -181,6 +196,22 @@ export function Review({ data, onRegenerate }: any) {
       <div className="space-y-6 !border-0 w-full mx-auto bg-white rounded-md !p-4 sm:!p-6 my-4 sm:my-6">
         <CardHeader className="!p-0">
           <div>
+          {isPdfDownloaded && (
+            <Button
+                  onClick={() => {
+                    localStorage.removeItem("isPdfDownloaded");
+                    if (onClearData) {
+                      onClearData();
+                      window.location.reload();
+                    }
+                  }}
+                  variant="outline"
+                  className="flex items-center gap-2 !h-8 sm:!h-9"
+                >
+                  <PencilLine className="h-4 w-4" />
+                  <span>Generate New</span>
+                </Button>
+          )}
             <CardTitle className="!text-lg sm:!text-xl lg:!text-[24px] leading-[30px] text-center mb-2">
               Your Personalized Timetable is Ready
             </CardTitle>

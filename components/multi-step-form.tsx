@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { StepProgress } from "./ui/step-progress";
 import { BasicInfo } from "./steps/basic-info";
@@ -9,10 +9,12 @@ import { CurrentStatus } from "./steps/current-status";
 import { DailySchedule } from "./steps/daily-schedule";
 import { Review } from "./steps/review";
 
+const TIMETABLE_STORAGE_KEY = 'upsc_timetable_data';
 
 export function MultiStepForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
   const steps = [
     {
@@ -36,8 +38,44 @@ export function MultiStepForm() {
 
   const stepTitles = steps.map(step => step.title);
 
+  // Check localStorage for existing timetable data on component mount
+  useEffect(() => {
+    const checkStoredTimetable = () => {
+      try {
+        const storedData = localStorage.getItem(TIMETABLE_STORAGE_KEY);
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          if (parsedData.generatedTimetable && parsedData.generatedTimetable.length > 0) {
+            console.log('Found stored timetable data, skipping to review step');
+            setFormData(parsedData);
+            setCurrentStep(4); // Skip to review step (index 4)
+          }
+        }
+      } catch (error) {
+        console.error('Error loading stored timetable data:', error);
+        // Clear corrupted data
+        localStorage.removeItem(TIMETABLE_STORAGE_KEY);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkStoredTimetable();
+  }, []);
+
   const updateFormData = (newData: any) => {
-    setFormData({ ...formData, ...newData });
+    const updatedData = { ...formData, ...newData };
+    setFormData(updatedData);
+    
+    // Save to localStorage if timetable data is present
+    if (updatedData.generatedTimetable && updatedData.generatedTimetable.length > 0) {
+      try {
+        localStorage.setItem(TIMETABLE_STORAGE_KEY, JSON.stringify(updatedData));
+        console.log('Timetable data saved to localStorage');
+      } catch (error) {
+        console.error('Error saving timetable data to localStorage:', error);
+      }
+    }
   };
 
   const handleRegenerate = (newTimetableData: any) => {
@@ -50,6 +88,23 @@ export function MultiStepForm() {
     };
     console.log("Updated form data:", updatedFormData);
     setFormData(updatedFormData);
+    
+    // Save regenerated data to localStorage
+    try {
+      localStorage.setItem(TIMETABLE_STORAGE_KEY, JSON.stringify(updatedFormData));
+      console.log('Regenerated timetable data saved to localStorage');
+    } catch (error) {
+      console.error('Error saving regenerated timetable data to localStorage:', error);
+    }
+  };
+
+  const clearStoredData = () => {
+    try {
+      localStorage.removeItem(TIMETABLE_STORAGE_KEY);
+      console.log('Stored timetable data cleared');
+    } catch (error) {
+      console.error('Error clearing stored data:', error);
+    }
   };
 
   const nextStep = () => {
@@ -65,6 +120,23 @@ export function MultiStepForm() {
   };
 
   const CurrentStepComponent = steps[currentStep].component;
+  
+  // Show loading state while checking localStorage
+  if (isLoading) {
+    return (
+      <div className="mt-[70px] mb-[90px] w-full">
+        <div className="max-w-full sm:max-w-4xl container mx-auto px-4 sm:px-6 pt-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-[70px] mb-[90px] w-full">
       <div className="max-w-full sm:max-w-4xl container mx-auto px-4 sm:px-6 pt-8">
@@ -84,6 +156,7 @@ export function MultiStepForm() {
                 nextStep={nextStep}
                 prevStep={prevStep}
                 onRegenerate={handleRegenerate}
+                onClearData={clearStoredData}
               />
             ) : (
               <CurrentStepComponent
