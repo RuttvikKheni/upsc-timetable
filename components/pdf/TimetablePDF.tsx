@@ -442,7 +442,7 @@ const TimetablePDF: React.FC<TimetablePDFProps> = ({ timetableData }) => {
           <View style={styles.quoteBox}>
             <Image src="/coma.png" style={[styles.coma, styles.caption]} />
             <Text style={styles.quoteText}>
-              "Success is the sum of small efforts repeated day in and day out."
+              &quot;Success is the sum of small efforts repeated day in and day out.&quot;
             </Text>
             <Text style={styles.caption}>Your journey to UPSC success starts here</Text>
           </View>
