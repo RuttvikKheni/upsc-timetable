@@ -134,7 +134,7 @@ export function PastPreparation({
                     </Label>
                   </li>
                 </ul>
-                <div className="pl-5">
+                <div>
                   <Input
                     id="prelimsScore"
                     value={formData.prelimsScore}
@@ -212,7 +212,7 @@ export function PastPreparation({
                     </Label>
                   </li>
                 </ul>
-                <div className="pl-5">
+                <div>
                   <Input
                     id="mainsScore"
                     value={formData.mainsScore}

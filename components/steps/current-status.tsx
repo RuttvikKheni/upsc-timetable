@@ -8,7 +8,7 @@ import { cn } from "../../lib/utils";
 import { AlertTriangle, ArrowLeft, ArrowRight, Bookmark, BookText, Brain, Calendar, CalendarDays, Check, CheckCircle, CircleFadingPlus, Clock, MinusCircle, Play, Star, Target, X } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import {CurrentStatusSchema} from "../../schema/schema";
+import { CurrentStatusSchema } from "../../schema/schema";
 
 const SUBJECTS = [
   "HISTORY",
@@ -318,7 +318,7 @@ export function CurrentStatus({
               <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5">
                 <Bookmark className="w-4 h-4" />Have you completed standard UPSC books?
               </Label>
-              <div className="space-y-2 pl-5">
+              <div className="space-y-2">
                 <RadioGroup
                   value={formData.completedStandardBooks}
                   onValueChange={(value) => {
@@ -379,10 +379,10 @@ export function CurrentStatus({
 
           <div className="space-y-2">
             <Label className="text-[13px] sm:text-[15px] flex items-start sm:items-center gap-1.5">
-              <CircleFadingPlus className="w-4 h-4"/>
+              <CircleFadingPlus className="w-4 h-4" />
               Have you selected your Optional yet?
             </Label>
-            <div className="space-y-2 pl-5">
+            <div className="space-y-2">
               <RadioGroup
                 value={formData.selectedOptional}
                 onValueChange={(value) => {
@@ -426,10 +426,14 @@ export function CurrentStatus({
 
           {formData.selectedOptional === "yes" && (
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 pl-5 col-span-2 sm:col-span-1">
-                <Label className="text-[13px] sm:text-[15px]" htmlFor="optionalSubject">
-                  What is your Optional subject?
-                </Label>
+              <div className="space-y-2 col-span-2 sm:col-span-1">
+                <ul className="arrow-list">
+                  <li>
+                    <Label className="text-[13px] sm:text-[15px]" htmlFor="optionalSubject">
+                      What is your Optional subject?
+                    </Label>
+                  </li>
+                </ul>
                 <Input
                   id="optionalSubject"
                   value={formData.optionalSubject}
@@ -447,9 +451,13 @@ export function CurrentStatus({
               </div>
 
               <div className="space-y-2 pl-5 sm:pl-0 col-span-2 sm:col-span-1">
-                <Label className="text-[13px] sm:text-[15px]">
-                  Have you started preparing for Optional?
-                </Label>
+                <ul className="arrow-list">
+                  <li>
+                    <Label className="text-[13px] sm:text-[15px]">
+                      Have you started preparing for Optional?
+                    </Label>
+                  </li>
+                </ul>
                 <div className="space-y-2">
                   <RadioGroup
                     value={formData.startedOptional}

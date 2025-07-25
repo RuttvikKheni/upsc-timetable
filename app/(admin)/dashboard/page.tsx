@@ -19,6 +19,7 @@ const navLinks = [{ name: "Home", icon: FaHome, href: "/dashboard" }];
 
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, Download, Loader2 } from "lucide-react";
 import { generateAndDownloadPDF } from "../../../lib/utils/pdfGenerator";
 interface TimetableData {
@@ -37,7 +38,6 @@ interface TimetableData {
 }
 export default function AdminDashboard() {
   const [changePwdOpen, setChangePwdOpen] = useState(false);
-  const [logoutOpen, setLogoutOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [oldPwd, setOldPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
@@ -49,14 +49,18 @@ export default function AdminDashboard() {
   const router = useRouter();
   const handleLogout = () => {
     if (typeof document !== "undefined") {
-      document.cookie = `token=;expires=${new Date(0).toUTCString()};path=/;domain=${window.location.hostname}`;
+      document.cookie = `token=;expires=${new Date(
+        0
+      ).toUTCString()};path=/;domain=${window.location.hostname}`;
     }
     localStorage.removeItem("userId");
     router.replace("/login");
   };
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(typeof window !== "undefined" && localStorage.getItem("theme") === "dark");
+  const [darkMode, setDarkMode] = useState(
+    typeof window !== "undefined" && localStorage.getItem("theme") === "dark"
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,7 +115,8 @@ export default function AdminDashboard() {
   };
 
   React.useEffect(() => {
-    const storedTheme = typeof window !== "undefined" && localStorage.getItem("theme");
+    const storedTheme =
+      typeof window !== "undefined" && localStorage.getItem("theme");
     if (storedTheme === "dark") {
       setDarkMode(true);
       document.documentElement.classList.add("dark");
@@ -145,7 +150,9 @@ export default function AdminDashboard() {
       try {
         isApiCallInProgress.current = true;
         setFetchingLoading(true);
-        console.log(`Fetching data: page=${currentPage}, limit=${itemsPerPage}`);
+        console.log(
+          `Fetching data: page=${currentPage}, limit=${itemsPerPage}`
+        );
 
         const searchParam = searchQuery
           ? `&search=${encodeURIComponent(searchQuery)}`
@@ -209,7 +216,7 @@ export default function AdminDashboard() {
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    setSearchQuery(e.target.value.trim());
   };
 
   const handleRazorpayPaymentIdChange = (
@@ -227,6 +234,7 @@ export default function AdminDashboard() {
   const handleSearch = () => {
     setCurrentPage(1);
     // Trigger the useEffect by updating a dependency or call fetchTimetableData directly
+
     const fetchTimetableData = async () => {
       if (isApiCallInProgress.current) {
         return;
@@ -236,6 +244,7 @@ export default function AdminDashboard() {
         isApiCallInProgress.current = true;
         setFetchingLoading(true);
         console.log(`Searching data: page=1, limit=${itemsPerPage}`);
+        console.log(encodeURIComponent(razorpayOrderIdSearch));
 
         const searchParam = searchQuery
           ? `&search=${encodeURIComponent(searchQuery)}`
@@ -277,7 +286,6 @@ export default function AdminDashboard() {
   };
 
   const handleDownloadPDF = async (timetableId: string, fullName: string) => {
-
     if (downloadingIds.has(timetableId)) {
       return; // Already downloading
     }
@@ -314,7 +322,7 @@ export default function AdminDashboard() {
         throw new Error("Invalid timetable data received");
       }
       // Generate and download PDF using frontend library
-      await generateAndDownloadPDF(data.timetable,1);
+      await generateAndDownloadPDF(data.timetable, 1);
 
       toast.success(`PDF downloaded successfully for ${fullName}!`, {
         position: "top-right",
@@ -338,23 +346,51 @@ export default function AdminDashboard() {
           isApiCallInProgress.current = true;
           setFetchingLoading(true);
 
-          const searchParam = searchQuery
+          let searchParam = searchQuery
             ? `&search=${encodeURIComponent(searchQuery)}`
             : "";
-          const paymentIdParam = razorpayPaymentIdSearch
+          let paymentIdParam = razorpayPaymentIdSearch
             ? `&razorpayPaymentId=${encodeURIComponent(
-                razorpayPaymentIdSearch
-              )}`
+              razorpayPaymentIdSearch
+            )}`
             : "";
-          const orderIdParam = razorpayOrderIdSearch
+          let orderIdParam = razorpayOrderIdSearch
             ? `&razorpayOrderId=${encodeURIComponent(razorpayOrderIdSearch)}`
             : "";
-          const statusParam = paymentStatusFilter
+          let statusParam = paymentStatusFilter
             ? `&paymentStatus=${encodeURIComponent(paymentStatusFilter)}`
             : "";
-          const downloadParam = downloadStatusFilter
+          let downloadParam = downloadStatusFilter
             ? `&downloadStatus=${encodeURIComponent(downloadStatusFilter)}`
             : "";
+          console.log(
+            searchParam,
+            paymentIdParam,
+            orderIdParam,
+            statusParam,
+            downloadParam
+          );
+          if (
+            !searchParam &&
+            !paymentIdParam &&
+            !orderIdParam &&
+            !statusParam &&
+            !downloadParam
+          ) {
+            const response = await fetch(
+              `/api/alltimetabledata?page=${currentPage}&limit=${itemsPerPage}`
+            );
+            const data = await response.json();
+            if (data.data && data.total !== undefined) {
+              setTimetableData(data.data);
+              setTotalCount(data.total);
+            } else {
+              setTimetableData(data);
+              setTotalCount(data.length);
+            }
+            setFetchingLoading(false);
+            return;
+          }
           const response = await fetch(
             `/api/alltimetabledata?page=${currentPage}&limit=${itemsPerPage}${searchParam}${paymentIdParam}${orderIdParam}${statusParam}${downloadParam}`
           );
@@ -399,14 +435,45 @@ export default function AdminDashboard() {
     }
   };
 
-  const clearSearch = () => {
+  const clearSearch = async () => {
+    // Reset all search-related state
     setSearchQuery("");
     setRazorpayPaymentIdSearch("");
     setRazorpayOrderIdSearch("");
     setCurrentPage(1);
     setPaymentStatusFilter("");
     setDownloadStatusFilter("");
-    handleSearch(); // Trigger search with cleared values
+
+    // Make API call directly with empty parameters to avoid async state update issues
+    if (isApiCallInProgress.current) {
+      return;
+    }
+
+    try {
+      isApiCallInProgress.current = true;
+      setFetchingLoading(true);
+      console.log(`Clearing search: page=1, limit=${itemsPerPage}`);
+
+      // Make API call with no search parameters (all empty)
+      const response = await fetch(
+        `/api/alltimetabledata?page=1&limit=${itemsPerPage}`
+      );
+      const data = await response.json();
+
+      if (data.data && data.total !== undefined) {
+        setTimetableData(data.data);
+        setTotalCount(data.total);
+      } else {
+        setTimetableData(data);
+        setTotalCount(data.length);
+      }
+      setFetchingLoading(false);
+    } catch (error) {
+      console.error("Error clearing search and fetching data:", error);
+      setFetchingLoading(false);
+    } finally {
+      isApiCallInProgress.current = false;
+    }
   };
 
   const handlePaymentStatusChange = (
@@ -455,9 +522,8 @@ export default function AdminDashboard() {
           )}
           <aside
             className={`fixed h-screen w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-900 shadow-lg z-40 transform transition-transform duration-200 ease-in-out
-            ${
-              sidebarOpen ? "translate-x-0" : "-translate-x-full"
-            } lg:translate-x-0 `}
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+              } lg:translate-x-0 `}
           >
             <div className="flex items-center justify-between px-6 h-16 border-b border-gray-100 dark:border-gray-900">
               <span className="text-xl font-bold text-gradient bg-primary bg-clip-text text-transparent dark:text-gray-100">
@@ -493,69 +559,41 @@ export default function AdminDashboard() {
                     key={link.name}
                     href={link.href}
                     onClick={() => setActiveNavItem(link.name)}
-                    className={`flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition group ${
-                      isActive
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg font-medium transition group ${isActive
                         ? "bg-primary/20 dark:bg-blue-500/20 text-primary dark:text-blue-400 border-l-4 border-primary dark:border-blue-400"
                         : "text-gray-700 dark:text-gray-100 hover:bg-primary/15 dark:hover:bg-gray-800"
-                    }`}
+                      }`}
                   >
                     <link.icon
-                      className={`h-5 w-5 transition ${
-                        isActive
+                      className={`h-5 w-5 transition ${isActive
                           ? "text-primary dark:text-blue-400"
                           : "text-primary dark:text-blue-400 group-hover:text-primary dark:group-hover:text-blue-300"
-                      }`}
+                        }`}
                     />
                     <span
-                      className={`transition ${
-                        isActive
+                      className={`transition ${isActive
                           ? "text-primary dark:text-blue-400 font-semibold"
                           : "group-hover:text-primary dark:group-hover:text-blue-300"
-                      }`}
+                        }`}
                     >
                       {link.name}
                     </span>
                   </Link>
                 );
               })}
-              <Dialog.Root open={logoutOpen} onOpenChange={setLogoutOpen}>
-                <Dialog.Portal>
-                  <Dialog.Overlay className="fixed inset-0 bg-black/40 z-50" />
-                  <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white dark:bg-gray-900 p-8 shadow-lg border border-gray-200 dark:border-gray-700">
-                    <Dialog.Title className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-                      Confirm Logout
-                    </Dialog.Title>
-                    <p className="text-gray-700 dark:text-gray-300">
-                      Are you sure you want to logout?
-                    </p>
-                    <div className="flex gap-2 justify-end mt-6">
-                      <button
-                        type="button"
-                        className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
-                        onClick={() => setLogoutOpen(false)}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700"
-                        onClick={handleLogout}
-                      >
-                        Logout
-                      </button>
-                    </div>
-                    <Dialog.Close asChild>
-                      <button className="absolute top-3 right-3 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 text-2xl">
-                        ×
-                      </button>
-                    </Dialog.Close>
-                  </Dialog.Content>
-                </Dialog.Portal>
-              </Dialog.Root>
+
+
               <Dialog.Root open={changePwdOpen} onOpenChange={setChangePwdOpen}>
                 <Dialog.Portal>
-                  <Dialog.Overlay className="fixed inset-0 bg-black/40 z-50" />
-                  <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white dark:bg-gray-900 p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+                  <Dialog.Overlay
+                    className="fixed inset-0 bg-black/40 z-50"
+                    onClick={() => setChangePwdOpen(false)}
+                  />
+                  <Dialog.Content
+                    className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white dark:bg-gray-900 p-8 shadow-lg border border-gray-200 dark:border-gray-700"
+                    onPointerDownOutside={() => setChangePwdOpen(false)}
+                    onEscapeKeyDown={() => setChangePwdOpen(false)}
+                  >
                     <Dialog.Title className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
                       Change Password
                     </Dialog.Title>
@@ -566,21 +604,21 @@ export default function AdminDashboard() {
                       <input
                         type="password"
                         placeholder="Old Password"
-                        className="rounded-lg border px-4 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="rounded-lg border px-4 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-blue-400"
                         value={oldPwd}
                         onChange={(e) => setOldPwd(e.target.value)}
                       />
                       <input
                         type="password"
                         placeholder="New Password"
-                        className="rounded-lg border px-4 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="rounded-lg border px-4 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-blue-400"
                         value={newPwd}
                         onChange={(e) => setNewPwd(e.target.value)}
                       />
                       <input
                         type="password"
                         placeholder="Confirm New Password"
-                        className="rounded-lg border px-4 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="rounded-lg border px-4 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-blue-400"
                         value={confirmPwd}
                         onChange={(e) => setConfirmPwd(e.target.value)}
                       />
@@ -597,7 +635,7 @@ export default function AdminDashboard() {
                         </button>
                         <button
                           type="submit"
-                          className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700"
+                          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-blue-600 font-semibold hover:bg-blue-700"
                         >
                           Change
                         </button>
@@ -627,38 +665,45 @@ export default function AdminDashboard() {
               <h1 className="text-xl lg:text-2xl font-semibold lg:font-bold flex-1 text-start dark:text-white">
                 Dashboard
               </h1>
-              <div className="relative">
-                <FaUserCircle
-                  className="h-8 w-8 text-primary/80 dark:text-gray-100 cursor-pointer"
-                  onClick={() => setUserMenuOpen((prev) => !prev)}
-                />
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded shadow-lg z-50">
-                    <ul className="border-b border-gray-200 dark:border-gray-700">
-                      <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-100">
-                        <button
-                          className="block w-full text-left"
-                          onClick={() => {
-                            setUserMenuOpen(false);
-                            setChangePwdOpen(true);
-                          }}
-                        >
-                          Change Password
-                        </button>
-                      </li>
-                    </ul>
-                    <button
-                      className="block w-full text-left px-4 py-2 hover:bg-red-100 dark:hover:bg-red-700 dark:hover:text-gray-100 text-red-500"
+              <DropdownMenu.Root open={userMenuOpen} onOpenChange={setUserMenuOpen}>
+                <DropdownMenu.Trigger asChild>
+                  <button className="flex items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    <FaUserCircle className="h-8 w-8 text-primary/80 dark:text-gray-100 cursor-pointer hover:text-primary dark:hover:text-white transition-colors" />
+                  </button>
+                </DropdownMenu.Trigger>
+
+                <DropdownMenu.Portal>
+                  <DropdownMenu.Content
+                    className="min-w-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-1 z-50"
+                    sideOffset={5}
+                    align="end"
+                  >
+                    <DropdownMenu.Item
+                      className="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none"
                       onClick={() => {
                         setUserMenuOpen(false);
-                        setLogoutOpen(true);
+                        setChangePwdOpen(true);
+                      }}
+                    >
+                      Change Password
+                    </DropdownMenu.Item>
+
+                    <DropdownMenu.Separator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
+
+                    <DropdownMenu.Item
+                      className="flex items-center px-3 py-2 text-sm text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer focus:bg-red-50 dark:focus:bg-red-900/20 focus:outline-none"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        if (confirm('Are you sure you want to logout?')) {
+                          handleLogout();
+                        }
                       }}
                     >
                       Logout
-                    </button>
-                  </div>
-                )}
-              </div>
+                    </DropdownMenu.Item>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Root>
             </div>
           </header>
 
@@ -688,7 +733,7 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-1 gap-6 mb-8 overflow-x-auto">
               {/* Search Bar and Filters */}
-              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-4 border border-gray-100 dark:border-gray-800">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-4 pb-20 md:pb-4 border border-gray-100 dark:border-gray-800">
                 {/* Search Fields Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-4">
                   {/* General Search Input */}
@@ -785,7 +830,7 @@ export default function AdminDashboard() {
                   <div className="col-span-1 flex gap-2">
                     <button
                       onClick={handleSearch}
-                      className="flex-1 absolute right-0 -bottom-9 md:-bottom-0 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap"
+                      className="flex-1 absolute right-0 -bottom-14 md:-bottom-0 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap"
                     >
                       <FaSearch className="h-4 w-4" />
                       Search
@@ -795,15 +840,15 @@ export default function AdminDashboard() {
                       razorpayPaymentIdSearch ||
                       razorpayOrderIdSearch ||
                       paymentStatusFilter ||
-                      downloadStatusFilter ) && (
-                      <button
-                        onClick={clearSearch}
-                        className="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 flex items-center justify-center"
-                        title="Clear Search"
-                      >
-                        <FaClear className="h-4 w-4" />
-                      </button>
-                    )}
+                      downloadStatusFilter) && (
+                        <button
+                          onClick={clearSearch}
+                          className="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 flex items-center justify-center"
+                          title="Clear Search"
+                        >
+                          <FaClear className="h-4 w-4" />
+                        </button>
+                      )}
                   </div>
                 </div>
 
@@ -813,44 +858,44 @@ export default function AdminDashboard() {
                   razorpayOrderIdSearch ||
                   paymentStatusFilter ||
                   downloadStatusFilter) && (
-                  <div className="mt-3 flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    {searchQuery && (
-                      <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-md">
-                        Search: &quot;{searchQuery}&quot;
-                      </span>
-                    )}
-                    {razorpayPaymentIdSearch && (
-                      <span className="inline-flex items-center px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-md">
-                        Payment ID: &quot;{razorpayPaymentIdSearch}&quot;
-                      </span>
-                    )}
-                    {razorpayOrderIdSearch && (
-                      <span className="inline-flex items-center px-2 py-1 bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 rounded-md">
-                        Order ID: &quot;{razorpayOrderIdSearch}&quot;
-                      </span>
-                    )}
-                    {paymentStatusFilter && (
-                      <span className="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-md">
-                        Payment:{" "}
-                        {paymentStatusFilter === "success"
-                          ? "Success"
-                          : "Failed"}
-                      </span>
-                    )}
-                    {downloadStatusFilter && (
-                      <span className="inline-flex items-center px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-md">
-                        Download:{" "}
-                        {downloadStatusFilter === "downloaded"
-                          ? "Success"
-                          : "Failed"}
-                      </span>
-                    )}
-                  </div>
-                )}
+                    <div className="mt-3 flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      {searchQuery && (
+                        <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-md">
+                          Search: &quot;{searchQuery}&quot;
+                        </span>
+                      )}
+                      {razorpayPaymentIdSearch && (
+                        <span className="inline-flex items-center px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-md">
+                          Payment ID: &quot;{razorpayPaymentIdSearch}&quot;
+                        </span>
+                      )}
+                      {razorpayOrderIdSearch && (
+                        <span className="inline-flex items-center px-2 py-1 bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 rounded-md">
+                          Order ID: &quot;{razorpayOrderIdSearch}&quot;
+                        </span>
+                      )}
+                      {paymentStatusFilter && (
+                        <span className="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-md">
+                          Payment:{" "}
+                          {paymentStatusFilter === "success"
+                            ? "Success"
+                            : "Failed"}
+                        </span>
+                      )}
+                      {downloadStatusFilter && (
+                        <span className="inline-flex items-center px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-md">
+                          Download:{" "}
+                          {downloadStatusFilter === "downloaded"
+                            ? "Success"
+                            : "Failed"}
+                        </span>
+                      )}
+                    </div>
+                  )}
               </div>
 
               <div
-                className="bg-white overflow-y-auto overflow-x-auto max-h-[700px] dark:bg-gray-900 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-800 custom-scrollbar"
+                className="bg-white overflow-y-auto overflow-x-auto max-h-[700px] dark:bg-gray-900 rounded-t-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-800 custom-scrollbar"
                 style={{
                   scrollbarWidth: "thin",
                   scrollbarColor: "#d1d5db transparent",
@@ -884,8 +929,8 @@ export default function AdminDashboard() {
                     background: rgba(156, 163, 175, 0.9);
                   }
                 `}</style>
-                <table className="w-full max-w-full ">
-                  <thead className="bg-gray-100 dark:bg-gray-800 sticky h-[50px] -top-6 z-20">
+                <table className="w-full max-w-full relative">
+                  <thead className="sticky w-full h-[50px]  z-20">
                     <tr>
                       {[
                         "S.No",
@@ -929,228 +974,238 @@ export default function AdminDashboard() {
                   <tbody>
                     {fetchingLoading
                       ? Array.from({ length: 5 }).map((_, i) => (
-                          <tr key={i} className="animate-pulse">
-                            {Array.from({ length: 12 }).map((_, j) => (
-                              <td
-                                key={j}
-                                className={[
-                                  "px-4 py-2 border-t border-gray-200 dark:border-gray-700 dark:text-white whitespace-nowrap",
-                                  [
-                                    "w-12", // S.No
-                                    "w-40", // Name
-                                    "w-56", // Email
-                                    "w-32", // Phone
-                                    "w-32", // Target Year
-                                    "w-20", // Amount
-                                    "w-56", // Razorpay Payment ID
-                                    "w-32", // Payment Status
-                                    "w-32", // Download Status
-                                    "w-56", // Time
-                                    "w-32 sticky right-0 bg-white dark:bg-gray-900 z-10", // Print PDF - Fixed column
-                                  ][j],
-                                ].join(" ")}
-                              >
-                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded skeleton-shimmer w-full"></div>
-                              </td>
-                            ))}
-                          </tr>
-                        ))
-                      : currentData.map((item: any, index: number) => {
-                          const createdAt = new Date(item.createdAt);
-                          const globalIndex = startIndex + index;
-                          return (
-                            <tr
-                              key={globalIndex}
-                              className="hover:bg-gray-100   dark:hover:bg-gray-800"
+                        <tr key={i} className="animate-pulse">
+                          {Array.from({ length: 12 }).map((_, j) => (
+                            <td
+                              key={j}
+                              className={[
+                                "px-4 py-2 border-t border-gray-200 dark:border-gray-700 dark:text-white whitespace-nowrap",
+                                [
+                                  "w-12", // S.No
+                                  "w-40", // Name
+                                  "w-56", // Email
+                                  "w-32", // Phone
+                                  "w-32", // Target Year
+                                  "w-20", // Amount
+                                  "w-56", // Razorpay Payment ID
+                                  "w-32", // Payment Status
+                                  "w-32", // Download Status
+                                  "w-56", // Time
+                                  "w-32 sticky right-0 bg-white dark:bg-gray-900 z-10", // Print PDF - Fixed column
+                                ][j],
+                              ].join(" ")}
                             >
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 whitespace-nowrap dark:text-[#64E9F8]">
-                                {globalIndex + 1}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#C9F7F5]">
-                                {item.fullName}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#34D399]">
-                                {item.email}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FFD700]">
-                                {item.contactNumber}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FF99CC]">
-                                {item.targetYear}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FFC107]">
-                                299
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FFC107]">
-                                {item.razorpayPaymentId}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#A7FFEB]">
-                                {item.razorpayOrderId}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm text-center">
-                                <span
-                                  className={`px-2 py-1 rounded-full ${
-                                    item.razorpayPaymentStatus === "success"
-                                      ? "bg-green-100 dark:bg-green-200 text-green-500"
-                                      : "bg-red-100 dark:bg-red-200 text-red-500"
+                              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded skeleton-shimmer w-full"></div>
+                            </td>
+                          ))}
+                        </tr>
+                      ))
+                      : currentData.map((item: any, index: number) => {
+                        const createdAt = new Date(item.createdAt);
+                        const globalIndex = startIndex + index;
+                        return (
+                          <tr
+                            key={globalIndex}
+                            className="hover:bg-gray-100   dark:hover:bg-gray-800"
+                          >
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 whitespace-nowrap dark:text-[#64E9F8]">
+                              {globalIndex + 1}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#C9F7F5]">
+                              {item.fullName}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#34D399]">
+                              {item.email}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FFD700]">
+                              {item.contactNumber}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FF99CC]">
+                              {item.targetYear}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FFC107]">
+                              299
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#FFC107]">
+                              {item.razorpayPaymentId}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#A7FFEB]">
+                              {item.razorpayOrderId}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm text-center">
+                              <span
+                                className={`px-2 py-1 rounded-full ${item.razorpayPaymentStatus === "success"
+                                    ? "bg-green-100 dark:bg-green-200 text-green-500"
+                                    : "bg-red-100 dark:bg-red-200 text-red-500"
                                   }`}
-                                >
-                                  {" "}
-                                  {item.razorpayPaymentStatus === "failed"
+                              >
+                                {" "}
+                                {item.razorpayPaymentStatus === "failed"
+                                  ? "Failed"
+                                  : "Success"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm text-center">
+                              <span
+                                className={`px-2 py-1 rounded-full ${item.downloadStatus === "Pending"
+                                    ? "bg-yellow-100 dark:bg-yellow-200 text-yellow-500"
+                                    : item.downloadStatus === "Failed"
+                                      ? "bg-red-100 dark:bg-red-200 text-red-500"
+                                      : "bg-green-100 dark:bg-green-200 text-green-500"
+                                  }`}
+                              >
+                                {" "}
+                                {item.downloadStatus === "Pending"
+                                  ? "Pending"
+                                  : item.downloadStatus === "Failed"
                                     ? "Failed"
                                     : "Success"}
-                                </span>
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm text-center">
-                                <span
-                                  className={`px-2 py-1 rounded-full ${
-                                    item.downloadStatus === "Pending" 
-                                      ? "bg-yellow-100 dark:bg-yellow-200 text-yellow-500"
-                                      : item.downloadStatus === "Failed" ? "bg-red-100 dark:bg-red-200 text-red-500" : "bg-green-100 dark:bg-green-200 text-green-500"
-                                  }`}
-                                >
-                                  {" "}
-                                  {item.downloadStatus === "Pending"
-                                    ? "Pending"
-                                    : item.downloadStatus === "Failed" ? "Failed" : "Success"}
-                                </span>
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#99E1D9]">
-                                {new Intl.DateTimeFormat("en-IN", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  second: "2-digit",
-                                }).format(createdAt)}
-                              </td>
-                              <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#6EE7BC] sticky -right-6 bg-white dark:bg-gray-900 z-10">
-                                <button
-                                  onClick={() =>
-                                    handleDownloadPDF(item._id, item.fullName)
-                                  }
-                                  disabled={downloadingIds.has(item._id)}
-                                  className="flex items-center gap-1 text-primary dark:text-blue-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  {downloadingIds.has(item._id) ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Download className="h-4 w-4" />
-                                  )}
-                                  {downloadingIds.has(item.id)
-                                    ? "Generating..."
-                                    : "Download"}
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#99E1D9]">
+                              {new Intl.DateTimeFormat("en-IN", {
+                                year: "numeric",
+                                month: "long",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                              }).format(createdAt)}
+                            </td>
+                            <td className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 break-words font-normal whitespace-nowrap text-sm dark:text-[#6EE7BC] sticky -right-6 bg-white dark:bg-gray-900 z-10">
+                              <button
+                                onClick={() =>
+                                  handleDownloadPDF(item._id, item.fullName)
+                                }
+                                disabled={downloadingIds.has(item._id)}
+                                className="flex items-center gap-1 text-primary dark:text-blue-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {downloadingIds.has(item._id) ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Download className="h-4 w-4" />
+                                )}
+                                {downloadingIds.has(item.id)
+                                  ? "Generating..."
+                                  : "Download"}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
               </div>
 
               {/* Pagination Controls */}
               {totalCount > 0 && (
-                <div className="flex items-center justify-between -mt-6 px-6 py-2 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-700 dark:text-gray-300">
-                    Show
-                  </label>
-                  <select
-                    value={itemsPerPage}
-                    onChange={(e) =>
-                      handleItemsPerPageChange(Number(e.target.value))
-                    }
-                    className="px-3 py-1 text-sm border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  >
-                    <option value={15}>15</option>
-                    <option value={25}>25</option>
-                    <option value={30}>30</option>
-                    <option value={50}>50</option>
-                  </select>
-                  <label className="text-sm text-gray-700 dark:text-gray-300">
-                    entries
-                  </label>
-                </div>
-              
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={goToPrevPage}
-                    disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors"
-                  >
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
-                    Previous
-                  </button>
-              
-                  <div className="flex items-center gap-1">
-                    {Array.from(
-                      { length: Math.min(5, totalPages) },
-                      (_, i) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
-              
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => goToPage(pageNum)}
-                            className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                              currentPage === pageNum
-                                ? "z-10 bg-primary/15 border !font-bold border-primary text-primary dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-400"
-                                : "text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      }
-                    )}
+                <div className="flex items-center justify-between -mt-6 px-6 py-2 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 rounded-b-2xl">
+                  <div className="flex items-center gap-2">
+                    <div className="relative inline-block w-full sm:w-fit">
+                      <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                        <label className="text-sm text-gray-700 dark:text-gray-300">
+                          Show
+                        </label>
+                        <select
+                          value={itemsPerPage}
+                          onChange={(e) =>
+                            handleItemsPerPageChange(Number(e.target.value))
+                          }
+                          className="appearance-none w-full sm:w-fit px-3 py-1.5 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-colors min-w-[50px]"
+                        >
+                          <option value={15}>15</option>
+                          <option value={25}>25</option>
+                          <option value={30}>30</option>
+                          <option value={50}>50</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 top-7 sm:top-0 right-2 flex items-center">
+                          <ChevronDown
+                            className="text-foreground w-4 h-4"
+                            strokeWidth={3}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <label className="text-sm text-gray-700 dark:text-gray-300">
+                      entries
+                    </label>
                   </div>
-              
-                  <button
-                    onClick={goToNextPage}
-                    disabled={currentPage === totalPages}
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors"
-                  >
-                    Next
-                    <svg
-                      className="w-4 h-4 ml-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={goToPrevPage}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+                      Previous
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from(
+                        { length: Math.min(5, totalPages) },
+                        (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => goToPage(pageNum)}
+                              className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${currentPage === pageNum
+                                  ? "z-10 bg-primary/15 border !font-bold border-primary text-primary dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-400"
+                                  : "text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                                }`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        }
+                      )}
+                    </div>
+
+                    <button
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors"
+                    >
+                      Next
+                      <svg
+                        className="w-4 h-4 ml-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              
               )}
             </div>
           </main>

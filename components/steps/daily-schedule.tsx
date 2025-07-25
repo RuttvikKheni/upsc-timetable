@@ -328,7 +328,7 @@ export function DailySchedule({
                     <Clock3 className="w-4 h-4" />
                     How many hours can you dedicate daily for studies?
                   </Label>
-                  <div className="space-y-2 pl-5">
+                  <div className="space-y-2">
                     <RadioGroup
                       value={formik.values.dailyHours}
                       onValueChange={(value) => formik.setFieldValue('dailyHours', value)}
@@ -370,7 +370,7 @@ export function DailySchedule({
                       <SunMedium className="w-5 h-5" />
                       What time of the day do you wish to start studying?
                     </Label>
-                    <div className="pl-5 relative">
+                    <div className="relative">
                       <TimePicker
                         showSecond={false}
                         format="h:mm a"
@@ -381,7 +381,7 @@ export function DailySchedule({
                       <Clock3 className="absolute right-3 top-2.5 !w-4 !h-4 text-black pointer-events-none" />
                     </div>
                     {formik.touched.preferredStartTime && formik.errors.preferredStartTime && (
-                      <p className="text-red-500 text-sm mt-1 ml-5">{formik.errors.preferredStartTime as string}</p>
+                      <p className="text-red-500 text-sm mt-1">{formik.errors.preferredStartTime as string}</p>
                     )}
                   </div>
 
@@ -390,7 +390,7 @@ export function DailySchedule({
                       <Moon className="w-4 h-4" />
                       What time do you go to bed?
                     </Label>
-                    <div className="pl-5 relative">
+                    <div className="relative">
                       <TimePicker
                         showSecond={false}
                         format="h:mm a"
@@ -401,7 +401,7 @@ export function DailySchedule({
                       <Clock3 className="absolute right-3 top-2.5 !w-4 !h-4 text-black pointer-events-none" />
                     </div>
                     {formik.touched.sleepTime && formik.errors.sleepTime && (
-                      <p className="text-red-500 text-sm mt-1 ml-5">{formik.errors.sleepTime as string}</p>
+                      <p className="text-red-500 text-sm mt-1">{formik.errors.sleepTime as string}</p>
                     )}
                   </div>
                 </div>
@@ -411,7 +411,7 @@ export function DailySchedule({
                     <CalendarMinus2 className="w-4 h-4" />
                     Weekly off day preference?
                   </Label>
-                  <div className="flex flex-wrap gap-4 ml-5">
+                  <div className="flex flex-wrap gap-4">
                     {weekDays.map((day) => {
 
                       const isChecked = formik.values.weeklyOffDays.includes(day.value);
@@ -442,7 +442,7 @@ export function DailySchedule({
                     )}
                   </div>
                   {formik.touched.weeklyOffDays && formik.errors.weeklyOffDays && (
-                    <p className="text-red-500 text-sm mt-1 ml-5">{formik.errors.weeklyOffDays as string}</p>
+                    <p className="text-red-500 text-sm mt-1">{formik.errors.weeklyOffDays as string}</p>
                   )}
                 </div>
                 {data.aspirantType === "full-time" && (
@@ -454,7 +454,7 @@ export function DailySchedule({
                     <RadioGroup
                       value={formik.values.subjectsPerDay}
                       onValueChange={(value) => formik.setFieldValue('subjectsPerDay', value)}
-                      className="flex flex-col space-y-1 ml-5"
+                      className="flex flex-col space-y-1"
                     >
                       <div className="flex space-x-2 border rounded-sm p-2 sm:p-3 border-gray-300">
                         <RadioGroupItem value="one" id="one-subject" />
@@ -471,7 +471,7 @@ export function DailySchedule({
                         </Label>
                       </div>
                     </RadioGroup>
-                    <p className="text-sm text-gray-600 !mt-6 flex flex-wrap gap-1.5 ml-5 border rounded-sm p-1.5 sm:p-2 pt-2.5 border-gray-200 bg-gray-100 select-none">
+                    <p className="text-sm text-gray-600 !mt-6 flex flex-wrap gap-1.5 border rounded-sm p-1.5 sm:p-2 pt-2.5 border-gray-200 bg-gray-100 select-none">
                       <Lightbulb className="!w-4 !h-4 mt-0.5" />
                       <div>
                         <p className="text-black text-[13px] sm:text-[15px] pb-0.5">Personalized Tip :</p>
@@ -482,7 +482,7 @@ export function DailySchedule({
                       </div>
                     </p>
                     {formik.touched.subjectsPerDay && formik.errors.subjectsPerDay && (
-                      <p className="text-red-500 text-sm mt-1 ml-5">{formik.errors.subjectsPerDay as string}</p>
+                      <p className="text-red-500 text-sm mt-1">{formik.errors.subjectsPerDay as string}</p>
                     )}
                   </div>
                 )}

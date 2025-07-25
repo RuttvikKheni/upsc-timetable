@@ -37,10 +37,20 @@ export function Review({ data, onRegenerate, onClearData }: any) {
   const handleWeekSelect = (value: string) => {
     setActiveWeek(value);
 
-    // Scroll to the selected week smoothly
+    // Scroll to the selected week with precise positioning
     const section = weekRefs.current[value];
     if (section) {
-      section.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Use a longer delay to ensure the accordion animation completes
+      setTimeout(() => {
+        const rect = section.getBoundingClientRect();
+        const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetPosition = rect.top + currentScrollTop - 10;
+        
+        window.scrollTo({
+          top: Math.max(0, targetPosition), // Ensure we don't scroll above the page
+          behavior: "smooth"
+        });
+      }, 300);
     }
   };
 
@@ -122,9 +132,7 @@ export function Review({ data, onRegenerate, onClearData }: any) {
         throw new Error("Failed to update download status");
       }
       
-      if (res.ok) {
-        localStorage.removeItem("timetableId");
-      }
+   
       
       // Show success message
       showToast("PDF downloaded successfully!", "success");
@@ -200,6 +208,7 @@ export function Review({ data, onRegenerate, onClearData }: any) {
             <Button
                   onClick={() => {
                     localStorage.removeItem("isPdfDownloaded");
+                    localStorage.removeItem("timetableId");
                     if (onClearData) {
                       onClearData();
                       window.location.reload();
