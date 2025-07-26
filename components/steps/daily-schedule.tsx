@@ -551,7 +551,7 @@ export function DailySchedule({
                     htmlFor="study_plan"
                   >
                     <HandHelping className="w-4 h-4" />
-                    How frequently do you want a mentor's guidance?
+                    How frequently do you want a mentor&apos;s guidance?
                   </Label>
 
                   <RadioGroup
