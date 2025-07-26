@@ -49,6 +49,19 @@ export default function RootLayout({
           }}
         />
 
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-CZ0PFKKN22"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-CZ0PFKKN22');
+            `,
+          }}
+        />
+
         <noscript>
           <img height="1" width="1" style={{ display: "none" }} src="https://www.facebook.com/tr?id=851608475361997&ev=PageView&noscript=1" />
         </noscript>

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
+
 import * as yup from "yup";
+
+import { ArrowLeft, ArrowRight, Award, BarChart3, Check, FileCheck, GraduationCap, X } from "lucide-react";
+
+import { pastPreparationValidationSchema } from "../../schema/schema";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
-import { ArrowLeft, ArrowRight, Award, BarChart3, Check, CheckCheck, FileCheck, GraduationCap, MessageSquareX, X } from "lucide-react";
-import { pastPreparationValidationSchema } from "../../schema/schema";
-
 
 interface PastPreparationProps {
   data: any;
@@ -286,11 +288,11 @@ export function PastPreparation({
           </div>
         </div>
       </div>
-      <div className="flex justify-between items-center gap-2 mx-4">
+      <div className="flex justify-between items-center gap-2 sm:mx-4">
         <Button type="button" variant="outline" className="gap-1 sm:gap-1.5" onClick={prevStep}>
           <ArrowLeft className="w-4 h-4" /> Back
         </Button>
-        <span className="text-xs sm:text-sm">Step 2 of 5</span>
+        <span className="text-xs sm:text-sm">Step 2 of 6</span>
         <Button type="submit" className="gap-1 sm:gap-1.5">
           Continue <ArrowRight className="w-4 h-4" />
         </Button>

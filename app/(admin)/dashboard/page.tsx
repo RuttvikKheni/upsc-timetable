@@ -143,16 +143,13 @@ export default function AdminDashboard() {
     const fetchTimetableData = async () => {
       // Prevent duplicate API calls
       if (isApiCallInProgress.current) {
-        console.log("API call already in progress, skipping...");
         return;
       }
 
       try {
         isApiCallInProgress.current = true;
         setFetchingLoading(true);
-        console.log(
-          `Fetching data: page=${currentPage}, limit=${itemsPerPage}`
-        );
+     
 
         const searchParam = searchQuery
           ? `&search=${encodeURIComponent(searchQuery)}`
@@ -243,8 +240,7 @@ export default function AdminDashboard() {
       try {
         isApiCallInProgress.current = true;
         setFetchingLoading(true);
-        console.log(`Searching data: page=1, limit=${itemsPerPage}`);
-        console.log(encodeURIComponent(razorpayOrderIdSearch));
+
 
         const searchParam = searchQuery
           ? `&search=${encodeURIComponent(searchQuery)}`
@@ -363,13 +359,7 @@ export default function AdminDashboard() {
           let downloadParam = downloadStatusFilter
             ? `&downloadStatus=${encodeURIComponent(downloadStatusFilter)}`
             : "";
-          console.log(
-            searchParam,
-            paymentIdParam,
-            orderIdParam,
-            statusParam,
-            downloadParam
-          );
+         
           if (
             !searchParam &&
             !paymentIdParam &&
@@ -930,7 +920,7 @@ export default function AdminDashboard() {
                   }
                 `}</style>
                 <table className="w-full max-w-full relative">
-                  <thead className="sticky w-full h-[50px]  z-20">
+                  <thead className="sticky w-full h-[50px]  z-20 -top-6 bg-gray-100 dark:bg-gray-800">
                     <tr>
                       {[
                         "S.No",

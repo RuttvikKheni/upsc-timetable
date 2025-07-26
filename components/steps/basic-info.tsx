@@ -198,9 +198,9 @@ export function BasicInfo({ data, updateData, nextStep }: BasicInfoProps) {
             </div>
           </div>
         </div>
-        <div className="flex justify-between items-center gap-2 mx-4">
+        <div className="flex justify-between items-center gap-2 sm:mx-4">
           <div className="w-[80px]" />
-          <span className="text-xs sm:text-sm">Step 1 of 5</span>
+          <span className="text-xs sm:text-sm">Step 1 of 6  </span>
           <Button type="submit" className="gap-1 sm:gap-1.5">
             Continue <ArrowRight className="w-4 h-4" />
           </Button>

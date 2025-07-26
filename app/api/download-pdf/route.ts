@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Processing ${timetableData.length} timetable entries for PDF generation`);
 
     // Group data by date
     const entriesByDate = timetableData.reduce((acc: any, entry: any) => {
@@ -62,7 +61,7 @@ export async function POST(request: NextRequest) {
       return acc;
     }, {});
 
-    console.log(`Organized into ${Object.keys(weeks).length} weeks`);
+    (`Organized into ${Object.keys(weeks).length} weeks`); 
 
     // Optimized HTML content for PDF with better performance
     const htmlContent = `
@@ -258,7 +257,7 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    console.log('Starting Puppeteer browser...');
+    ('Starting Puppeteer browser...');
 
     // Launch puppeteer with optimized settings for large documents
     browser = await puppeteer.launch({
@@ -284,14 +283,14 @@ export async function POST(request: NextRequest) {
     await page.setViewport({ width: 1200, height: 800 });
     await page.setDefaultTimeout(90000); // 90 seconds
     
-    console.log('Setting page content...');
+    ('Setting page content...');
     
     await page.setContent(htmlContent, { 
       waitUntil: 'domcontentloaded', // Changed from networkidle0 for better performance
       timeout: 60000 
     });
     
-    console.log('Generating PDF...');
+    ('Generating PDF...');
     
     const pdfBuffer = await page.pdf({
       format: 'A4',
@@ -309,7 +308,7 @@ export async function POST(request: NextRequest) {
     await browser.close();
     browser = null;
 
-    console.log(`PDF generated successfully, size: ${pdfBuffer.length} bytes`);
+    (`PDF generated successfully, size: ${pdfBuffer.length} bytes`);
 
     // Return PDF as response
     return new Response(Buffer.from(pdfBuffer), {

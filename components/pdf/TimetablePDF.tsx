@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Image,
   Link,
+  Font,
 } from "@react-pdf/renderer";
 import { stylesData } from "./Style";
 
@@ -20,6 +21,26 @@ interface TimetablePDFProps {
 }
 
 const TimetablePDF: React.FC<TimetablePDFProps> = ({ timetableData }) => {
+
+  Font.register({
+    family: 'Poppins', fonts: [
+      { src: './fonts/Poppins-Regular.ttf', fontStyle: 'normal', fontWeight: 'normal' },
+      { src: './fonts/Poppins-Bold.ttf', fontStyle: 'normal', fontWeight: 'bold' },
+      { src: './fonts/Poppins-Italic.ttf', fontStyle: 'italic', fontWeight: 'normal' },
+      { src: './fonts/Poppins-BoldItalic.ttf', fontStyle: 'italic', fontWeight: 'bold' },
+      { src: './fonts/Poppins-Light.ttf', fontStyle: 'normal', fontWeight: 'light' },
+      { src: './fonts/Poppins-LightItalic.ttf', fontStyle: 'italic', fontWeight: 'light' },
+      { src: './fonts/Poppins-Medium.ttf', fontStyle: 'normal', fontWeight: 500 },
+      { src: './fonts/Poppins-MediumItalic.ttf', fontStyle: 'italic', fontWeight: 500 },
+      { src: './fonts/Poppins-SemiBold.ttf', fontStyle: 'normal', fontWeight: 600 },
+      { src: './fonts/Poppins-SemiBoldItalic.ttf', fontStyle: 'italic', fontWeight: 600 },
+      { src: './fonts/Poppins-ExtraBold.ttf', fontStyle: 'normal', fontWeight: 800 },
+      { src: './fonts/Poppins-ExtraBoldItalic.ttf', fontStyle: 'italic', fontWeight: 800 },
+      { src: './fonts/Poppins-Black.ttf', fontStyle: 'normal', fontWeight: 900 },
+      { src: './fonts/Poppins-BlackItalic.ttf', fontStyle: 'italic', fontWeight: 900 },
+    ]
+  });
+
   // Group data by date (same logic as backend)
   const entriesByDate = timetableData.reduce((acc: any, entry: any) => {
     if (!acc[entry.DATE]) {
@@ -67,7 +88,7 @@ const TimetablePDF: React.FC<TimetablePDFProps> = ({ timetableData }) => {
       dayCount: index + 1,
       activities: entriesByDate[date],
     }))
-    
+
     // Per Day Per Page Slot Split
     .reduce((acc: any, curr: any) => {
       const newActivities = splitActivities(curr.activities);
@@ -82,7 +103,7 @@ const TimetablePDF: React.FC<TimetablePDFProps> = ({ timetableData }) => {
 
       return acc;
     }, []);
-    console.log("days=========================",days);
+  console.log("days=========================", days);
   const daysChunks = [];
   for (let i = 0; i < days.length; i += 2) {
     daysChunks.push(days.slice(i, i + 2));
@@ -207,7 +228,7 @@ const TimetablePDF: React.FC<TimetablePDFProps> = ({ timetableData }) => {
                       {activity["MAIN SUBJECT"] || "General"}
                     </Text>
                   </View>
-                    <Text style={styles.publicHoliday}>{day.activities[0]?.isHoliday ?? ""}</Text>
+                  <Text style={styles.publicHoliday}>{day.activities[0]?.isHoliday ?? ""}</Text>
                   {activity.HOURS && (
                     <>
                       <Text style={styles.label}>Hours</Text>

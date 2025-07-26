@@ -7,6 +7,7 @@ import { BasicInfo } from "./steps/basic-info";
 import { PastPreparation } from "./steps/past-preparation";
 import { CurrentStatus } from "./steps/current-status";
 import { DailySchedule } from "./steps/daily-schedule";
+import { Personality } from "./steps/personality";
 import { Review } from "./steps/review";
 
 const TIMETABLE_STORAGE_KEY = 'upsc_timetable_data';
@@ -30,6 +31,10 @@ export function MultiStepForm() {
       component: CurrentStatus,
     },
     {
+      title: "Personality",
+      component: Personality,
+    },
+    {
       title: "Schedule",
       component: DailySchedule,
     },
@@ -46,7 +51,6 @@ export function MultiStepForm() {
         if (storedData) {
           const parsedData = JSON.parse(storedData);
           if (parsedData.generatedTimetable && parsedData.generatedTimetable.length > 0) {
-            console.log('Found stored timetable data, skipping to review step');
             setFormData(parsedData);
             setCurrentStep(4); // Skip to review step (index 4)
           }
@@ -66,12 +70,11 @@ export function MultiStepForm() {
   const updateFormData = (newData: any) => {
     const updatedData = { ...formData, ...newData };
     setFormData(updatedData);
-    
+
     // Save to localStorage if timetable data is present
     if (updatedData.generatedTimetable && updatedData.generatedTimetable.length > 0) {
       try {
         localStorage.setItem(TIMETABLE_STORAGE_KEY, JSON.stringify(updatedData));
-        console.log('Timetable data saved to localStorage');
       } catch (error) {
         console.error('Error saving timetable data to localStorage:', error);
       }
@@ -79,20 +82,17 @@ export function MultiStepForm() {
   };
 
   const handleRegenerate = (newTimetableData: any) => {
-    console.log("handleRegenerate called with:", newTimetableData);
     // Update the form data with the new timetable data
     // The API returns { timetable: [...] } but we need { generatedTimetable: [...] }
     const updatedFormData = {
       ...formData,
       generatedTimetable: newTimetableData.timetable || newTimetableData.generatedTimetable
     };
-    console.log("Updated form data:", updatedFormData);
     setFormData(updatedFormData);
-    
+
     // Save regenerated data to localStorage
     try {
       localStorage.setItem(TIMETABLE_STORAGE_KEY, JSON.stringify(updatedFormData));
-      console.log('Regenerated timetable data saved to localStorage');
     } catch (error) {
       console.error('Error saving regenerated timetable data to localStorage:', error);
     }
@@ -101,7 +101,6 @@ export function MultiStepForm() {
   const clearStoredData = () => {
     try {
       localStorage.removeItem(TIMETABLE_STORAGE_KEY);
-      console.log('Stored timetable data cleared');
     } catch (error) {
       console.error('Error clearing stored data:', error);
     }
@@ -120,11 +119,11 @@ export function MultiStepForm() {
   };
 
   const CurrentStepComponent = steps[currentStep].component;
-  
+
   // Show loading state while checking localStorage
   if (isLoading) {
     return (
-      <div className="mt-[70px] mb-[90px] w-full">
+      <div className="mt-[70px] mb-[110px] sm:mb-[90px] w-full">
         <div className="max-w-full sm:max-w-4xl container mx-auto px-4 sm:px-6 pt-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
@@ -138,7 +137,7 @@ export function MultiStepForm() {
   }
 
   return (
-    <div className="mt-[70px] mb-[90px] w-full">
+    <div className="mt-[70px] mb-[110px] sm:mb-[90px] w-full">
       <div className="max-w-full sm:max-w-4xl container mx-auto px-4 sm:px-6 pt-8">
         <StepProgress steps={stepTitles} currentStep={currentStep} />
         <AnimatePresence mode="wait">

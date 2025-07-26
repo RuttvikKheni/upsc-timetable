@@ -1,6 +1,8 @@
 import React from "react";
-import { cn } from "../../lib/utils";
+
 import { Check } from "lucide-react";
+
+import { cn } from "../../lib/utils";
 
 interface StepProgressProps {
   steps: string[];
@@ -32,7 +34,7 @@ export function StepProgress({
                     "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 relative z-10 bg-white border-2",
                     {
                       "bg-primary text-primary-foreground border-primary": isCompleted,
-                      "bg-primary text-primary-foreground border-primary ring ring-primary/20":
+                      "bg-primary text-primary-foreground border-primary md:ring md:ring-primary/20":
                         isCurrent,
                       "bg-white text-muted-foreground border-muted": isUpcoming,
                     }
@@ -46,7 +48,7 @@ export function StepProgress({
                     {
                       "text-primary": isCompleted || isCurrent,
                       "text-muted-foreground": isUpcoming,
-                      "after:bg-[#e2e8f0] after:w-0.5 after:absolute after:h-full after:rotate-90 after:top-0 after:ml-2 min-[356px]:after:ml-3 min-[400px]:after:ml-5 min-[500px]:after:ml-7 min-[600px]:after:ml-10 sm:after:ml-14 md:after:ml-6 lg:after:ml-10":
+                      "after:bg-[#e2e8f0] after:w-0.5 after:absolute after:h-[calc(100%-10px)] after:rotate-90 after:top-1.5 min-[369px]:after:ml-1 min-[389px]:after:ml-1 min-[400px]:after:ml-[5px] min-[410px]:after:ml-1.5 min-[421px]:after:ml-2 min-[455px]:after:ml-2.5 min-[485px]:after:ml-3 min-[520px]:after:ml-4 min-[545px]:after:ml-5 sm:after:ml-6 min-[665px]:after:ml-7 min-[668px]:after:ml-8 md:after:ml-10 lg:after:ml-5":
                         index !== steps.length - 1,
                       "after:bg-primary after:w-0.5 after:top-1/2 after:-translate-y-1/2":
                         currentStep === -1,
@@ -55,7 +57,7 @@ export function StepProgress({
                     }
                   )}
                 >
-                  <span className="hidden md:inline">
+                  <span className="hidden lg:inline">
                     {step}
                   </span>
                 </p>

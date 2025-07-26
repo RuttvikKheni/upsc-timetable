@@ -46,7 +46,6 @@ export async function POST(
       targetYear: timetableData.targetYear
     };
 
-    console.log('Mapped student profile:', studentProfile);
 
     // Generate timetable using the same logic as the main form
     const generatedTimetable = await generateTimetable(studentProfile);

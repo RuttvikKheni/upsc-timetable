@@ -1,17 +1,19 @@
 import { useState } from "react";
+import Image from "next/image";
+
+import { useFormik } from 'formik';
+import TimePicker from 'rc-time-picker';
+import 'rc-time-picker/assets/index.css';
+import moment from 'moment';
+
+import { ArrowLeft, ArrowRight, BookA, Brain, CalendarMinus2, ClipboardCheck, Clock3, Clock4, HandHelping, Headphones, Hourglass, Lightbulb, MessageCircleHeart, Moon, SunMedium, SunMoon, Users } from "lucide-react";
+
+import { cn } from "../../lib/utils";
+import { loadRazorpay } from "../../lib/loadRazorpay";
+import { dailyScheduleValidationSchema } from "../../schema/schema";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { loadRazorpay } from "../../lib/loadRazorpay";
-import { ArrowLeft, ArrowRight, Brain, CalendarMinus2, Clock3, Clock4, Lightbulb, Moon, SunMedium } from "lucide-react";
-import { cn } from "../../lib/utils";
-import TimePicker from 'rc-time-picker';
-import moment from 'moment';
-import 'rc-time-picker/assets/index.css';
-import * as yup from 'yup';
-import { useFormik } from 'formik';
-import { dailyScheduleValidationSchema } from "../../schema/schema";
-import Image from "next/image";
 
 interface DailyScheduleProps {
   data: any;
@@ -36,6 +38,26 @@ export function DailySchedule({
   nextStep,
   prevStep,
 }: DailyScheduleProps) {
+
+  const [formData, setFormData] = useState({
+    studyPlan: "",
+    guidance: "",
+    beforePlan: "",
+    concept: "",
+    session: "",
+    time: "",
+    group: "",
+    rating: ""
+  });
+
+  const studyPlans = ["Aggressive Plan", "Balanced Plan"];
+  const guidances = ["Daily", "Weekly", "Monthly"];
+  const beforePlans = ["Yes", "No", "I tend to abandon it"];
+  const concepts = ["Reading", "Listening", "Watching Videos"];
+  const sessions = ["Long Study sessions (Deep Work)", "Short Frequent Study Bursts"];
+  const sunMoon = ["Morning", "Night", "Both"];
+  const groupDiscussion = ["Alone", "Group/Discussion", "Depends on subject"];
+  const ratings = ["Low", "Medium", "High", "Very High"];
 
   const [isLoading, setIsLoading] = useState(false);
   const [isTimeLoading, setIsTimeLoading] = useState(false);
@@ -68,7 +90,6 @@ export function DailySchedule({
   };
 
   const handleRazorpay = async (values?: typeof formik.values) => {
-    console.log(values);
     localStorage.removeItem("basicInfo");
     const formValues = values || formik.values;
 
@@ -107,7 +128,6 @@ export function DailySchedule({
       }
 
       const orderData = await orderRes.json();
-      console.log("Razorpay order created:", orderData);
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: orderData.amount,
@@ -486,13 +506,325 @@ export function DailySchedule({
                     )}
                   </div>
                 )}
+                <div className="space-y-2">
+                  <Label
+                    className="text-[13px] sm:text-[15px] flex sm:items-center gap-1.5"
+                    htmlFor="study_plan"
+                  >
+                    <BookA className="w-4 h-4" />
+                    Would you like an aggressive study plan or a balanced one?
+                  </Label>
+
+                  <RadioGroup
+                    value={formData.studyPlan}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, studyPlan: value });
+                    }}
+                    className="flex flex-wrap space-x-2"
+                  >
+                    {studyPlans.map((plan) => {
+                      const isSelected = formData.studyPlan === plan;
+                      return (
+                        <div key={plan}>
+                          <RadioGroupItem
+                            value={plan}
+                            id={plan}
+                            className="sr-only"
+                          />
+                          <label
+                            htmlFor={plan}
+                            className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                              ? "bg-primary/10 text-primary border-primary"
+                              : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                              }`}
+                          >
+                            {plan}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    className="text-[13px] sm:text-[15px] flex sm:items-center gap-1.5"
+                    htmlFor="study_plan"
+                  >
+                    <HandHelping className="w-4 h-4" />
+                    How frequently do you want a mentor's guidance?
+                  </Label>
+
+                  <RadioGroup
+                    value={formData.guidance}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, guidance: value });
+                    }}
+                    className="flex flex-wrap space-x-2"
+                  >
+                    {guidances.map((guidance) => {
+                      const isSelected = formData.guidance === guidance;
+                      return (
+                        <div key={guidance}>
+                          <RadioGroupItem
+                            value={guidance}
+                            id={guidance}
+                            className="sr-only"
+                          />
+                          <label
+                            htmlFor={guidance}
+                            className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                              ? "bg-primary/10 text-primary border-primary"
+                              : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                              }`}
+                          >
+                            {guidance}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    className="text-[13px] sm:text-[15px] flex sm:items-center gap-1.5"
+                    htmlFor="study_plan"
+                  >
+                    <ClipboardCheck className="w-4 h-4" />
+                    Have you followed a plan before?
+                  </Label>
+
+                  <RadioGroup
+                    value={formData.beforePlan}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, beforePlan: value });
+                    }}
+                    className="flex flex-wrap space-x-2"
+                  >
+                    {beforePlans.map((beforePlan) => {
+                      const isSelected = formData.beforePlan === beforePlan;
+                      return (
+                        <div key={beforePlan}>
+                          <RadioGroupItem
+                            value={beforePlan}
+                            id={beforePlan}
+                            className="sr-only"
+                          />
+                          <label
+                            htmlFor={beforePlan}
+                            className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                              ? "bg-primary/10 text-primary border-primary"
+                              : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                              }`}
+                          >
+                            {beforePlan}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    className="text-[13px] sm:text-[15px] flex sm:items-center gap-1.5"
+                    htmlFor="study_plan"
+                  >
+                    <Headphones className="w-4 h-4" />
+                    Do you grasp concepts faster by reading, listening, or watching videos?
+                  </Label>
+
+                  <RadioGroup
+                    value={formData.concept}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, concept: value });
+                    }}
+                    className="flex flex-wrap space-x-2"
+                  >
+                    {concepts.map((concept) => {
+                      const isSelected = formData.concept === concept;
+                      return (
+                        <div key={concept}>
+                          <RadioGroupItem
+                            value={concept}
+                            id={concept}
+                            className="sr-only"
+                          />
+                          <label
+                            htmlFor={concept}
+                            className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                              ? "bg-primary/10 text-primary border-primary"
+                              : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                              }`}
+                          >
+                            {concept}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    className="text-[13px] sm:text-[15px] flex sm:items-center gap-1.5"
+                    htmlFor="study_plan"
+                  >
+                    <Hourglass className="w-4 h-4" />
+                    Do you prefer long study sessions (deep work) or short frequent study bursts?
+                  </Label>
+
+                  <RadioGroup
+                    value={formData.session}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, session: value });
+                    }}
+                    className="flex flex-wrap space-x-2"
+                  >
+                    {sessions.map((session) => {
+                      const isSelected = formData.session === session;
+                      return (
+                        <div key={session}>
+                          <RadioGroupItem
+                            value={session}
+                            id={session}
+                            className="sr-only"
+                          />
+                          <label
+                            htmlFor={session}
+                            className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                              ? "bg-primary/10 text-primary border-primary"
+                              : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                              }`}
+                          >
+                            {session}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    className="text-[13px] sm:text-[15px] flex sm:items-center gap-1.5"
+                    htmlFor="study_plan"
+                  >
+                    <SunMoon className="w-4 h-4" />
+                    Are you a morning or night learner?
+                  </Label>
+
+                  <RadioGroup
+                    value={formData.time}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, time: value });
+                    }}
+                    className="flex flex-wrap space-x-2"
+                  >
+                    {sunMoon.map((time) => {
+                      const isSelected = formData.time === time;
+                      return (
+                        <div key={time}>
+                          <RadioGroupItem
+                            value={time}
+                            id={time}
+                            className="sr-only"
+                          />
+                          <label
+                            htmlFor={time}
+                            className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                              ? "bg-primary/10 text-primary border-primary"
+                              : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                              }`}
+                          >
+                            {time}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    className="text-[13px] sm:text-[15px] flex sm:items-center gap-1.5"
+                    htmlFor="study_plan"
+                  >
+                    <Users className="w-4 h-4" />
+                    Do you like studying alone or in a group/discussion?
+                  </Label>
+
+                  <RadioGroup
+                    value={formData.group}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, group: value });
+                    }}
+                    className="flex flex-wrap space-x-2"
+                  >
+                    {groupDiscussion.map((group) => {
+                      const isSelected = formData.group === group;
+                      return (
+                        <div key={group}>
+                          <RadioGroupItem
+                            value={group}
+                            id={group}
+                            className="sr-only"
+                          />
+                          <label
+                            htmlFor={group}
+                            className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                              ? "bg-primary/10 text-primary border-primary"
+                              : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                              }`}
+                          >
+                            {group}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    className="text-[13px] sm:text-[15px] flex sm:items-center gap-1.5"
+                    htmlFor="study_plan"
+                  >
+                    <MessageCircleHeart className="w-4 h-4" />
+                    How would you rate your current stress level?
+                  </Label>
+
+                  <RadioGroup
+                    value={formData.rating}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, rating: value });
+                    }}
+                    className="flex flex-wrap space-x-2"
+                  >
+                    {ratings.map((rating) => {
+                      const isSelected = formData.rating === rating;
+                      return (
+                        <div key={rating}>
+                          <RadioGroupItem
+                            value={rating}
+                            id={rating}
+                            className="sr-only"
+                          />
+                          <label
+                            htmlFor={rating}
+                            className={`flex items-center px-2 sm:px-3 py-1 sm:py-[7px] rounded-sm border cursor-pointer text-[13px] sm:text-sm font-medium transition-colors text-nowrap select-none ${isSelected
+                              ? "bg-primary/10 text-primary border-primary"
+                              : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                              }`}
+                          >
+                            {rating}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </div>
               </div>
             </div>
             <div className="flex justify-between items-center flex-wrap gap-2 mx-4">
               <Button type="button" variant="outline" className="gap-1 sm:gap-1.5" onClick={prevStep}>
                 <ArrowLeft className="w-4 h-4" /> Back
               </Button>
-              <span className="text-xs sm:text-sm">Step 4 of 5</span>
+              <span className="text-xs sm:text-sm">Step 5 of 6</span>
               <Button type="submit" className={`gap-1 sm:gap-1.5 w-[230px] ${isLoading && 'opacity-50 cursor-not-allowed'}`} disabled={isLoading}>
                 {
                   isLoading ? (

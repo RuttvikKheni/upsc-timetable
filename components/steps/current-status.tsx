@@ -1,14 +1,17 @@
 import React, { useState } from "react";
+
 import * as yup from "yup";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
+import { AlertTriangle, ArrowLeft, ArrowRight, Bookmark, BookText, Calendar, CalendarDays, Check, CheckCircle, CircleFadingPlus, Clock, MinusCircle, Play, Star, Target, X } from "lucide-react";
+
+import { CurrentStatusSchema } from "../../schema/schema";
+import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { cn } from "../../lib/utils";
-import { AlertTriangle, ArrowLeft, ArrowRight, Bookmark, BookText, Brain, Calendar, CalendarDays, Check, CheckCircle, CircleFadingPlus, Clock, MinusCircle, Play, Star, Target, X } from "lucide-react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { CurrentStatusSchema } from "../../schema/schema";
 
 const SUBJECTS = [
   "HISTORY",
@@ -71,7 +74,7 @@ export function CurrentStatus({
 
     const newFormData = { ...formData, [field]: updated };
     setFormData(newFormData);
-    
+
     // Clear error when user makes selection  
     if (errors[field]) {
       setErrors({ ...errors, [field]: "" });
@@ -84,7 +87,7 @@ export function CurrentStatus({
     try {
       await CurrentStatusSchema.validate(formData, { abortEarly: false });
       setErrors({});
-      
+
       // Update local storage only if the form data has changed
       const storedData = localStorage.getItem("basicInfo");
       if (storedData && JSON.parse(storedData) !== formData) {
@@ -505,11 +508,11 @@ export function CurrentStatus({
 
         </div>
       </div>
-      <div className="flex justify-between items-center gap-2 mx-4">
+      <div className="flex justify-between items-center gap-2 sm:mx-4">
         <Button type="button" variant="outline" className="gap-1 sm:gap-1.5" onClick={prevStep}>
           <ArrowLeft className="w-4 h-4" /> Back
         </Button>
-        <span className="text-xs sm:text-sm">Step 3 of 5</span>
+        <span className="text-xs sm:text-sm">Step 3 of 6</span>
         <Button type="submit" className="gap-1 sm:gap-1.5">
           Continue <ArrowRight className="w-4 h-4" />
         </Button>
